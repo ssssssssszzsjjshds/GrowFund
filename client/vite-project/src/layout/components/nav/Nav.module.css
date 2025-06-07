@@ -1,0 +1,83 @@
+nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 1rem;
+    flex-direction: column;
+
+    background-color: aqua;
+
+    .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 70%;
+
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: "Savate", serif;
+
+
+        }
+
+        .search {
+            border: 1px solid #ccc;
+
+
+            display: flex;
+            align-items: center;
+            width: 500px;
+            height: 40px;
+            outline: none;
+
+            .searchInput {
+                border: none;
+                outline: none;
+                width: 100%;
+                height: 100%;
+                font-size: 1rem;
+                text-indent: 20px;
+            }
+        }
+
+        .navRight {
+            display: flex;
+            align-items: center;
+           gap: 1rem;
+           width: 150px;
+        }
+    }
+
+
+    .categories {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 70%;
+
+
+        ul {
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            gap: 1rem;
+            width: 100%;
+
+            li {
+                list-style: none;
+                font-size: 1.1rem;
+                font-weight: 500;
+                cursor: pointer;
+
+            }
+
+            li:hover {
+                text-decoration: underline;
+               
+            }
+        }
+    }
+}
