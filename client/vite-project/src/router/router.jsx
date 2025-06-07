@@ -13,6 +13,9 @@ import CampaignEdit from "../pages/campaignEdit/CampaignEdit";
 import AdminPanel from "../admin/AdminPanel";
 import AdminCampaignDetail from "../pages/adminCampaignDetail/AdminCampaignDetail";
 import RequireAdmin from "./RequireAdmin";
+import AdminReviewDetail from "../components/AdminReviewDetail";
+import ReviewCampaigns from "../components/ReviewCampaigns";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -50,6 +53,22 @@ const router = createBrowserRouter([
     element: (
       <RequireAdmin>
         <AdminCampaignDetail />
+      </RequireAdmin>
+    ),
+  },
+  {
+    path: "/admin/review",
+    element: (
+      <RequireAdmin>
+        <ReviewCampaigns />,
+      </RequireAdmin>
+    ),
+  },
+  {
+    path: "/admin/review/:id",
+    element: (
+      <RequireAdmin>
+        <AdminReviewDetail />
       </RequireAdmin>
     ),
   },

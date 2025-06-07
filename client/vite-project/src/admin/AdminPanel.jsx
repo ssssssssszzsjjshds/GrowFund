@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
+import { Link } from "react-router";
 import AdminCampaignList from "../components/AdminCampaignList";
+
+
 
 const AdminPanel = () => {
   const { token } = useSelector((state) => state.auth);
@@ -32,6 +35,9 @@ const AdminPanel = () => {
 
   return (
     <div className="p-4">
+      <Link to="/admin/review" className="text-blue-600 underline">
+        Review Pending Campaigns
+      </Link>
       <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">Users</h2>
@@ -45,8 +51,7 @@ const AdminPanel = () => {
 
       <h2 className="text-xl font-semibold mb-2">Campaigns</h2>
       <ul>
-        <AdminCampaignList />
-
+        <AdminCampaignList  />
       </ul>
     </div>
   );

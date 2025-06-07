@@ -1,10 +1,14 @@
 // src/components/AdminCampaignCard.jsx
-import { Link } from "react-router";
+import { Link } from "react-router"; // <-- Use react-router-dom, not just react-router
 
-const AdminCampaignCard = ({ campaign }) => {
+const AdminCampaignCard = ({ campaign, isReviewPage = false }) => {
+  const linkPath = isReviewPage
+    ? `/admin/review/${campaign._id}`
+    : `/admin/campaigns/${campaign._id}`;
+
   return (
     <Link
-      to={`/admin/campaigns/${campaign._id}`}
+      to={linkPath}
       className="border p-4 rounded shadow hover:shadow-md transition"
     >
       {campaign.image && (

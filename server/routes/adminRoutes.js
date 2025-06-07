@@ -25,4 +25,44 @@ router.get("/campaigns", verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
+router.get("/review-campaigns", verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const pendingCampaigns = await Campaign.find({ status: "pending" }).sort({ createdAt: -1 });
+    res.json(pendingCampaigns);
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to fetch pending campaigns" });
+  }
+});
+
+// PATCH: Approve campaign
+router.patch("/campaigns/:id/approve", verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const campaign = await Campaign.findByIdAndUpdate(
+      req.params.id,
+      { status: "approved" },
+      { new: true }
+    );
+    if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
+    res.json({ msg: "Campaign approved", campaign });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to approve campaign" });
+  }
+});
+
+// PATCH: Reject campaign
+router.patch("/campaigns/:id/reject", verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const campaign = await Campaign.findByIdAndUpdate(
+      req.params.id,
+      { status: "rejected" },
+      { new: true }
+    );
+    if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
+    res.json({ msg: "Campaign rejected", campaign });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to reject campaign" });
+  }
+});
+
+
 export default router;

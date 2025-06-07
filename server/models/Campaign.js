@@ -7,8 +7,17 @@ const campaignSchema = new mongoose.Schema(
     goal: { type: Number, required: true },
     image: { type: String },
     deadline: { type: Date, required: true },
-    creator: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    raisedAmount: { type: Number, default: 0 }, // ✅ ADD THIS
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    raisedAmount: { type: Number, default: 0 },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "approved", // You can change this logic in the POST route
+    },
   },
   { timestamps: true }
 );

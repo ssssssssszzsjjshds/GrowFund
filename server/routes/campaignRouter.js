@@ -30,13 +30,23 @@ router.post(
       const { title, description, goal, deadline } = req.body;
       const image = req.file ? `/uploads/${req.file.filename}` : null;
 
+      const numericGoal = Number(goal);
+      if (isNaN(numericGoal) || numericGoal <= 0) {
+        return res.status(400).json({ msg: "Goal must be a positive number" });
+      }
+
+      // Automatically set status based on goal amount
+      const status =
+        numericGoal < 100 || numericGoal > 10000 ? "pending" : "approved";
+
       const campaign = new Campaign({
         title,
         description,
-        goal,
+        goal: numericGoal,
         deadline,
         image,
-        creator: req.user.id, // 🔥 This links the campaign to the logged-in user
+        creator: req.user.id,
+        status, // 🟢 assign status here
       });
 
       await campaign.save();
@@ -63,6 +73,9 @@ router.get("/api/campaigns", async (req, res) => {
 
     if (userId) {
       filter.creator = userId;
+      // Do NOT filter by status here — allow viewing all statuses for your own campaigns
+    } else {
+      filter.status = "approved"; // Only apply for public queries
     }
 
     const campaigns = await Campaign.find(filter).sort({ createdAt: -1 });
@@ -71,6 +84,7 @@ router.get("/api/campaigns", async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 });
+
 
 router.get("/api/campaigns/my", verifyToken, async (req, res) => {
   try {
@@ -88,6 +102,13 @@ router.get("/api/campaigns/:id", async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
+
+    if (
+      campaign.status !== "approved" &&
+      (!req.user || campaign.creator.toString() !== req.user.id)
+    ) {
+      return res.status(403).json({ msg: "Campaign not available" });
+    }
     res.json(campaign);
   } catch (err) {
     res.status(500).json({ msg: err.message });

@@ -7,7 +7,7 @@ const CampaignCard = ({ campaign, isAdmin = false }) => {
     ((campaign.raisedAmount || 0) / campaign.goal) * 100,
     100
   ).toFixed(0);
- const path = isAdmin
+  const path = isAdmin
     ? `/admin/campaigns/${campaign._id}`
     : `/campaigns/${campaign._id}`;
   return (
@@ -42,6 +42,11 @@ const CampaignCard = ({ campaign, isAdmin = false }) => {
           />
         </div>
       </div>
+      {campaign.status !== "approved" && (
+        <span className="text-yellow-600 font-medium">
+          {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
+        </span>
+      )}
 
       <p className="text-sm text-gray-600 mb-1">
         Deadline: {new Date(campaign.deadline).toLocaleDateString()}
