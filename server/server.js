@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import path from "path";
 import pledgeRoutes from "./routes/pledge.js";
 import commentRoutes from "./routes/comment.js";
+import adminRoutes from "./routes/adminRoutes.js";
 dotenv.config();
 connectDb();
 
@@ -24,4 +25,6 @@ app.use("/", CampaignRouter); // /api/campaigns
 app.use("/", AuthRouter); // /api/auth/login & register
 app.use("/api/comments", commentRoutes);
 app.use("/api/pledges", pledgeRoutes);
+
+app.use("/api/admin", adminRoutes);
 app.listen(5000, () => console.log("Server is running on port 5000"));

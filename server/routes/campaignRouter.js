@@ -99,8 +99,11 @@ router.delete("/api/campaigns/:id", verifyToken, async (req, res) => {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
 
-    // Check if the logged-in user owns the campaign
-    if (campaign.creator.toString() !== req.user.id) {
+    // Allow deletion by the creator OR an admin
+    const isOwner = campaign.creator.toString() === req.user.id;
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
       return res
         .status(403)
         .json({ msg: "Unauthorized to delete this campaign" });
@@ -120,7 +123,6 @@ router.delete("/api/campaigns/:id", verifyToken, async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 });
-
 router.patch("/api/campaigns/:id", verifyToken, async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);

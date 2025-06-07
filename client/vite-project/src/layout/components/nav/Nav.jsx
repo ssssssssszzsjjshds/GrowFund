@@ -39,7 +39,7 @@ const Nav = () => {
       <div className={styles.categories}>
         <ul>
           <li><Link to="/create-campaign">Create Campaign</Link></li>
-          <li>Category 2</li>
+          <li><Link to="/admin">Admin</Link></li>
           <li>Category 3</li>
           <li>Category 4</li>
           <li>Category 5</li>

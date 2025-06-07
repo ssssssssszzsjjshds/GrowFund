@@ -2,12 +2,14 @@ import { Link } from "react-router";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
-const CampaignCard = ({ campaign }) => {
+const CampaignCard = ({ campaign, isAdmin = false }) => {
   const progress = Math.min(
     ((campaign.raisedAmount || 0) / campaign.goal) * 100,
     100
   ).toFixed(0);
-
+ const path = isAdmin
+    ? `/admin/campaigns/${campaign._id}`
+    : `/campaigns/${campaign._id}`;
   return (
     <Link
       to={`/campaigns/${campaign._id}`}
