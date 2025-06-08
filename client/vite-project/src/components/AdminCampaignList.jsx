@@ -1,7 +1,7 @@
 // src/components/AdminCampaignList.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
-import AdminCampaignCard from "./AdminCampaignCard"; // New admin-specific card
+import AdminCampaignCard from "./AdminCampaignCard";
 import { useSelector } from "react-redux";
 
 const AdminCampaignList = () => {
@@ -15,7 +15,9 @@ const AdminCampaignList = () => {
         const res = await axios.get("http://localhost:5000/api/admin/campaigns", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setCampaigns(res.data);
+        // ✅ Filter out rejected campaigns
+        const filtered = res.data.filter(c => c.status !== "rejected");
+        setCampaigns(filtered);
       } catch (err) {
         console.error("Failed to fetch campaigns:", err);
       } finally {

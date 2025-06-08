@@ -3,6 +3,8 @@ import * as Yup from "yup";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { useSelector } from "react-redux";
+import { categories } from "../../../../../shared/categories.js";
+
 
 const CreateCampaign = () => {
   const { token } = useSelector((state) => state.auth);
@@ -13,6 +15,7 @@ const CreateCampaign = () => {
     description: "",
     goal: "",
     deadline: "",
+    category: "",
     image: null,
   };
 
@@ -23,6 +26,9 @@ const CreateCampaign = () => {
       .min(1, "Goal must be at least 1")
       .required("Goal is required"),
     deadline: Yup.date().required("Deadline is required"),
+    category: Yup.string()
+      .oneOf(categories, "Invalid category")
+      .required("Category is required"),
   });
 
   const onSubmit = async (values, { setSubmitting }) => {
@@ -32,6 +38,7 @@ const CreateCampaign = () => {
       formData.append("description", values.description);
       formData.append("goal", values.goal);
       formData.append("deadline", values.deadline);
+      formData.append("category", values.category);
       if (values.image) {
         formData.append("image", values.image);
       }
@@ -99,6 +106,20 @@ const CreateCampaign = () => {
             />
             <ErrorMessage name="deadline" component="div" className="text-red-500" />
 
+            <Field
+              as="select"
+              name="category"
+              className="w-full p-2 border rounded bg-white"
+            >
+              <option value="">Select a Category</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </Field>
+            <ErrorMessage name="category" component="div" className="text-red-500" />
+
             <button
               type="submit"
               disabled={isSubmitting}
@@ -114,4 +135,3 @@ const CreateCampaign = () => {
 };
 
 export default CreateCampaign;
-    

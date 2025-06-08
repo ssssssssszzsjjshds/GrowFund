@@ -4,8 +4,10 @@ import { Campaign } from "../models/Campaign.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 import fs from "fs";
 import path from "path"; // Optional auth middleware
+import { categories , validCategories } from "../../shared/categories.js"
 
 const router = express.Router();
+
 
 // Set up Multer (store images in "uploads/" folder)
 const storage = multer.diskStorage({
@@ -27,7 +29,7 @@ router.post(
   upload.single("image"),
   async (req, res) => {
     try {
-      const { title, description, goal, deadline } = req.body;
+      const { title, description, goal, deadline, category } = req.body;
       const image = req.file ? `/uploads/${req.file.filename}` : null;
 
       const numericGoal = Number(goal);
@@ -35,7 +37,10 @@ router.post(
         return res.status(400).json({ msg: "Goal must be a positive number" });
       }
 
-      // Automatically set status based on goal amount
+      if (!validCategories.includes(category)) {
+        return res.status(400).json({ msg: "Invalid category selected" });
+      }
+
       const status =
         numericGoal < 100 || numericGoal > 10000 ? "pending" : "approved";
 
@@ -44,9 +49,10 @@ router.post(
         description,
         goal: numericGoal,
         deadline,
+        category,
         image,
         creator: req.user.id,
-        status, // 🟢 assign status here
+        status,
       });
 
       await campaign.save();
@@ -62,8 +68,13 @@ router.post(
 router.get("/api/campaigns", async (req, res) => {
   try {
     const filter = {};
-    const { search, userId } = req.query;
 
+
+    const { search, userId, category } = req.query;
+
+if (category) {
+  filter.category = category;
+}
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -84,7 +95,6 @@ router.get("/api/campaigns", async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 });
-
 
 router.get("/api/campaigns/my", verifyToken, async (req, res) => {
   try {

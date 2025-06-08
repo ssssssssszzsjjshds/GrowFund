@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { categories } from "../../shared/categories.js"; // adjust path if needed
 
 const campaignSchema = new mongoose.Schema(
   {
@@ -7,6 +8,11 @@ const campaignSchema = new mongoose.Schema(
     goal: { type: Number, required: true },
     image: { type: String },
     deadline: { type: Date, required: true },
+    category: {
+      type: String,
+      enum: categories,
+      required: true,
+    },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -16,7 +22,7 @@ const campaignSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
-      default: "approved", // You can change this logic in the POST route
+      default: "approved",
     },
   },
   { timestamps: true }

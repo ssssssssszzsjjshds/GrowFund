@@ -3,6 +3,7 @@ import { Link } from "react-router"; // FIX: use react-router-dom, not "react-ro
 import { logout } from "../../../redux/slices/authSlice";
 import styles from "./Nav.module.css";
 import SearchBar from "../../../components/SearchBar";
+import { categories } from "../../../../../../shared/categories";
 
 const Nav = () => {
   const dispatch = useDispatch();
@@ -44,6 +45,17 @@ const Nav = () => {
           <li>Category 4</li>
           <li>Category 5</li>
         </ul>
+      </div>
+      <div className="flex gap-2">
+        {categories.map((cat) => (
+          <Link
+            key={cat}
+            to={`/?category=${encodeURIComponent(cat)}`}
+            className="text-sm underline hover:text-yellow-300"
+          >
+            {cat}
+          </Link>
+        ))}
       </div>
     </nav>
   );
