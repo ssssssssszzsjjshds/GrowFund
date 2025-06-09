@@ -15,6 +15,7 @@ import AdminCampaignDetail from "../pages/adminCampaignDetail/AdminCampaignDetai
 import RequireAdmin from "./RequireAdmin";
 import AdminReviewDetail from "../components/AdminReviewDetail";
 import ReviewCampaigns from "../components/ReviewCampaigns";
+import SavedCampaigns from "../pages/savedCampaigns/SavedCampaigns";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
         path: "campaigns/:id/edit",
         element: <CampaignEdit />,
       },
+      {
+        path: '/saved-campaigns',
+        element: <SavedCampaigns />
+      }
     ],
   },
   {

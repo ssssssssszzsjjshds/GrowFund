@@ -3,18 +3,18 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import CampaignCard from "../../components/CampaignCard";
 
+const API_BASE = "http://localhost:5000";
+
 const MyCampaigns = () => {
-  const { token, user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMyCampaigns = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/campaigns/my", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await axios.get(`${API_BASE}/api/campaigns/my`, {
+          withCredentials: true,
         });
         setCampaigns(res.data);
       } catch (err) {
@@ -24,8 +24,8 @@ const MyCampaigns = () => {
       }
     };
 
-    if (token) fetchMyCampaigns();
-  }, [token]);
+    if (user) fetchMyCampaigns();
+  }, [user]);
 
   if (loading) return <p>Loading your campaigns...</p>;
   if (!campaigns.length) return <p>You have not created any campaigns.</p>;

@@ -1,23 +1,20 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../../axiosInstance";
 
-// Thunk to handle pledging
+// Thunk to handle pledging (cookie-based, no token in header)
 export const pledgeToCampaign = createAsyncThunk(
   "pledge/pledgeToCampaign",
-  async ({ campaignId, amount, token }, { rejectWithValue }) => {
+  async ({ campaignId, amount }, { rejectWithValue }) => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/pledges",
-        { campaignId, amount },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        "/api/pledges",
+        { campaignId, amount }
       );
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { msg: "Pledge failed" });
+      return rejectWithValue(
+        err.response?.data || { msg: "Pledge failed" }
+      );
     }
   }
 );
@@ -45,8 +42,6 @@ const pledgeSlice = createSlice({
       .addCase(pledgeToCampaign.fulfilled, (state, action) => {
         state.loading = false;
         state.pledge = action.payload;
-        console.log("Pledged successfully:", action.payload);
-        
       })
       .addCase(pledgeToCampaign.rejected, (state, action) => {
         state.loading = false;

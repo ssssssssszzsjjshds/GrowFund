@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router"; // FIX: use react-router-dom, not "react-router"
-import { logout } from "../../../redux/slices/authSlice";
+import { Link, useNavigate } from "react-router"; // FIX: use react-router-dom, not "react-router"
+import { logoutUser } from "../../../redux/slices/authSlice";
 import styles from "./Nav.module.css";
 import SearchBar from "../../../components/SearchBar";
 import { categories } from "../../../../../../shared/categories";
@@ -8,6 +8,13 @@ import { categories } from "../../../../../../shared/categories";
 const Nav = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  const handeLogout = () => {
+    dispatch(logoutUser());
+    navigate("/");
+
+  };
 
   return (
     <nav>
@@ -27,7 +34,10 @@ const Nav = () => {
               <Link to="/my-campaigns" className={styles.myCampaigns}>
                 My Campaigns
               </Link>
-              <button onClick={() => dispatch(logout())}>Logout</button>
+              <Link to="/saved-campaigns" className={styles.savedCampaigns}>
+                Saved Campaigns
+              </Link>
+              <button onClick={() => handeLogout()}>Logout</button>
             </>
           ) : (
             <>
@@ -39,8 +49,12 @@ const Nav = () => {
       </div>
       <div className={styles.categories}>
         <ul>
-          <li><Link to="/create-campaign">Create Campaign</Link></li>
-          <li><Link to="/admin">Admin</Link></li>
+          <li>
+            <Link to="/create-campaign">Create Campaign</Link>
+          </li>
+          <li>
+            <Link to="/admin">Admin</Link>
+          </li>
           <li>Category 3</li>
           <li>Category 4</li>
           <li>Category 5</li>

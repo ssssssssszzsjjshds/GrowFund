@@ -1,12 +1,7 @@
-import express from "express";
 import Pledge from "../models/Pledge.js";
 import { Campaign } from "../models/Campaign.js";
-import { verifyToken } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
-
-// POST /api/pledges
-router.post("/", verifyToken, async (req, res) => {
+export const createPledge = async (req, res) => {
   try {
     const { campaignId, amount } = req.body;
 
@@ -16,6 +11,7 @@ router.post("/", verifyToken, async (req, res) => {
     if (isNaN(amount) || amount <= 0) {
       return res.status(400).json({ msg: "Amount must be a positive number" });
     }
+
     const campaign = await Campaign.findById(campaignId);
     if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
 
@@ -32,14 +28,14 @@ router.post("/", verifyToken, async (req, res) => {
     });
 
     // Update campaign raisedAmount
-    campaign.raisedAmount += parseFloat(amount);
-    await campaign.save();
+    await Campaign.updateOne(
+      { _id: campaignId },
+      { $inc: { raisedAmount: parseFloat(amount) } }
+    );
 
     res.status(201).json(pledge);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error", err });
   }
-});
-
-export default router;
+};

@@ -1,177 +1,30 @@
 import express from "express";
 import multer from "multer";
-import { Campaign } from "../models/Campaign.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
-import fs from "fs";
-import path from "path"; // Optional auth middleware
-import { categories , validCategories } from "../../shared/categories.js"
+import {
+  createCampaign,
+  getAllCampaigns,
+  getMyCampaigns,
+  getCampaignById,
+  deleteCampaign,
+  updateCampaign,
+} from "../controllers/campaignController.js";
 
 const router = express.Router();
 
-
-// Set up Multer (store images in "uploads/" folder)
+// Multer image storage
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
-
 const upload = multer({ storage });
 
-// @route   POST /api/campaigns
-// @desc    Create new campaign
-router.post(
-  "/api/campaigns",
-  verifyToken,
-  upload.single("image"),
-  async (req, res) => {
-    try {
-      const { title, description, goal, deadline, category } = req.body;
-      const image = req.file ? `/uploads/${req.file.filename}` : null;
-
-      const numericGoal = Number(goal);
-      if (isNaN(numericGoal) || numericGoal <= 0) {
-        return res.status(400).json({ msg: "Goal must be a positive number" });
-      }
-
-      if (!validCategories.includes(category)) {
-        return res.status(400).json({ msg: "Invalid category selected" });
-      }
-
-      const status =
-        numericGoal < 100 || numericGoal > 10000 ? "pending" : "approved";
-
-      const campaign = new Campaign({
-        title,
-        description,
-        goal: numericGoal,
-        deadline,
-        category,
-        image,
-        creator: req.user.id,
-        status,
-      });
-
-      await campaign.save();
-      res.status(201).json(campaign);
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  }
-);
-
-// @route   GET /api/campaigns
-// @desc    Get all campaigns
-router.get("/api/campaigns", async (req, res) => {
-  try {
-    const filter = {};
-
-
-    const { search, userId, category } = req.query;
-
-if (category) {
-  filter.category = category;
-}
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    if (userId) {
-      filter.creator = userId;
-      // Do NOT filter by status here — allow viewing all statuses for your own campaigns
-    } else {
-      filter.status = "approved"; // Only apply for public queries
-    }
-
-    const campaigns = await Campaign.find(filter).sort({ createdAt: -1 });
-    res.json(campaigns);
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-});
-
-router.get("/api/campaigns/my", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const campaigns = await Campaign.find({ creator: userId }).sort({
-      createdAt: -1,
-    });
-    res.json(campaigns);
-  } catch (err) {
-    res.status(500).json({ msg: "Failed to fetch your campaigns" });
-  }
-});
-
-router.get("/api/campaigns/:id", async (req, res) => {
-  try {
-    const campaign = await Campaign.findById(req.params.id);
-    if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
-
-    if (
-      campaign.status !== "approved" &&
-      (!req.user || campaign.creator.toString() !== req.user.id)
-    ) {
-      return res.status(403).json({ msg: "Campaign not available" });
-    }
-    res.json(campaign);
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-});
-
-router.delete("/api/campaigns/:id", verifyToken, async (req, res) => {
-  try {
-    const campaign = await Campaign.findById(req.params.id);
-    if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
-
-    // Allow deletion by the creator OR an admin
-    const isOwner = campaign.creator.toString() === req.user.id;
-    const isAdmin = req.user.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return res
-        .status(403)
-        .json({ msg: "Unauthorized to delete this campaign" });
-    }
-
-    // Delete associated image file (if it exists)
-    if (campaign.image) {
-      const imagePath = path.join("public", campaign.image); // adjust if needed
-      fs.unlink(imagePath, (err) => {
-        if (err) console.warn("Image not deleted:", err.message);
-      });
-    }
-
-    await campaign.deleteOne();
-    res.json({ msg: "Campaign deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-});
-router.patch("/api/campaigns/:id", verifyToken, async (req, res) => {
-  try {
-    const campaign = await Campaign.findById(req.params.id);
-    if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
-
-    // Authorization check
-    if (campaign.creator.toString() !== req.user.id)
-      return res
-        .status(403)
-        .json({ msg: "Not authorized to update this campaign" });
-
-    Object.assign(campaign, req.body);
-    await campaign.save();
-
-    res.json({ msg: "Campaign updated", campaign });
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-});
+// Routes
+router.post("/api/campaigns", verifyToken, upload.single("image"), createCampaign);
+router.get("/api/campaigns", getAllCampaigns);
+router.get("/api/campaigns/my", verifyToken, getMyCampaigns);
+router.get("/api/campaigns/:id", getCampaignById);
+router.delete("/api/campaigns/:id", verifyToken, deleteCampaign);
+router.patch("/api/campaigns/:id", verifyToken, updateCampaign);
 
 export default router;
