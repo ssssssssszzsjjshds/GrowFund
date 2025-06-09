@@ -16,11 +16,12 @@ import RequireAdmin from "./RequireAdmin";
 import AdminReviewDetail from "../components/AdminReviewDetail";
 import ReviewCampaigns from "../components/ReviewCampaigns";
 import SavedCampaigns from "../pages/savedCampaigns/SavedCampaigns";
+import App from "../App";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: <App />,
     children: [
       { path: "", element: <Home /> },
       { path: "login", element: <Login /> },

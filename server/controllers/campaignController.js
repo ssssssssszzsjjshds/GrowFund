@@ -41,7 +41,7 @@ export const createCampaign = async (req, res) => {
 export const getAllCampaigns = async (req, res) => {
   try {
     const filter = {};
-    const { search, userId, category } = req.query;
+    const { search, userId, category, sortBy } = req.query;
 
     if (category) {
       filter.category = category;
@@ -59,7 +59,16 @@ export const getAllCampaigns = async (req, res) => {
       filter.status = "approved";
     }
 
-    const campaigns = await Campaign.find(filter).sort({ createdAt: -1 });
+    // Add sorting options
+    let sort = { createdAt: -1 }; // default sort
+    if (sortBy === "views") {
+      sort = { views: -1 };
+    }
+
+    const campaigns = await Campaign.find(filter)
+      .select(sortBy === "views" ? "+views" : "-views")
+      .sort(sort);
+
     res.json(campaigns);
   } catch (err) {
     res.status(500).json({ msg: err.message });
@@ -77,11 +86,38 @@ export const getMyCampaigns = async (req, res) => {
     res.status(500).json({ msg: "Failed to fetch your campaigns" });
   }
 };
+export const getMostViewedCampaigns = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    const campaigns = await Campaign.find({ status: "approved" })
+      .select("+views")
+      .sort({ views: -1 })
+      .limit(limit);
+
+    res.json(campaigns);
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to fetch popular campaigns" });
+  }
+};
 
 export const getCampaignById = async (req, res) => {
   try {
-    const campaign = await Campaign.findById(req.params.id);
-    if (!campaign) return res.status(404).json({ msg: "Campaign not found" });
+    // First, find and update the campaign
+    const campaign = await Campaign.findByIdAndUpdate(
+      req.params.id,
+      {
+        $inc: { views: 1 },
+        $set: { lastViewedAt: new Date() },
+      },
+      {
+        new: true,
+        select: "+views +lastViewedAt", // Explicitly include these fields
+      }
+    );
+
+    if (!campaign) {
+      return res.status(404).json({ msg: "Campaign not found" });
+    }
 
     if (
       campaign.status !== "approved" &&
@@ -89,8 +125,17 @@ export const getCampaignById = async (req, res) => {
     ) {
       return res.status(403).json({ msg: "Campaign not available" });
     }
+
+    // For debugging
+    console.log("Updated campaign:", {
+      id: campaign._id,
+      views: campaign.views,
+      lastViewedAt: campaign.lastViewedAt,
+    });
+
     res.json(campaign);
   } catch (err) {
+    console.error("Error updating campaign views:", err);
     res.status(500).json({ msg: err.message });
   }
 };
@@ -139,5 +184,26 @@ export const updateCampaign = async (req, res) => {
     res.json({ msg: "Campaign updated", campaign });
   } catch (err) {
     res.status(500).json({ msg: err.message });
+  }
+};
+
+export const recordView = async (req, res) => {
+  try {
+    const campaign = await Campaign.findByIdAndUpdate(
+      req.params.id,
+      {
+        $inc: { views: 1 },
+        $set: { lastViewedAt: new Date() },
+      },
+      { new: true }
+    );
+
+    if (!campaign) {
+      return res.status(404).json({ message: "Campaign not found" });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

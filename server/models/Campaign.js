@@ -24,7 +24,13 @@ const campaignSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "approved",
     },
+    views: { type: Number, default: 0, select: false },
+    lastViewedAt: {
+      type: Date,
+      select: false,
+    },
   },
+
   { timestamps: true }
 );
 

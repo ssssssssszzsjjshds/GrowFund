@@ -8,6 +8,8 @@ import {
   getCampaignById,
   deleteCampaign,
   updateCampaign,
+  getMostViewedCampaigns,
+  recordView
 } from "../controllers/campaignController.js";
 
 const router = express.Router();
@@ -20,11 +22,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Routes
-router.post("/api/campaigns", verifyToken, upload.single("image"), createCampaign);
+router.post(
+  "/api/campaigns",
+  verifyToken,
+  upload.single("image"),
+  createCampaign
+);
 router.get("/api/campaigns", getAllCampaigns);
 router.get("/api/campaigns/my", verifyToken, getMyCampaigns);
 router.get("/api/campaigns/:id", getCampaignById);
 router.delete("/api/campaigns/:id", verifyToken, deleteCampaign);
 router.patch("/api/campaigns/:id", verifyToken, updateCampaign);
-
+router.get("/api/campaigns/popular", getMostViewedCampaigns);
+router.post('/api/campaigns/:id/view', recordView)
 export default router;

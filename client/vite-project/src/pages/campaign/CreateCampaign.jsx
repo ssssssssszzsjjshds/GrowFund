@@ -1,13 +1,10 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
+import axios from "../../axiosInstance.js"; // Use your axios instance with withCredentials: true
 import { useNavigate } from "react-router";
-import { useSelector } from "react-redux";
 import { categories } from "../../../../../shared/categories.js";
 
-
 const CreateCampaign = () => {
-  const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const initialValues = {
@@ -43,11 +40,12 @@ const CreateCampaign = () => {
         formData.append("image", values.image);
       }
 
-      await axios.post("http://localhost:5000/api/campaigns", formData, {
+      await axios.post("/api/campaigns", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          // No Authorization header needed!
           "Content-Type": "multipart/form-data",
         },
+        // Axios instance should already have withCredentials: true
       });
 
       navigate("/");

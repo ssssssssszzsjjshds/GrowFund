@@ -1,6 +1,6 @@
-import { useParams, useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useParams, useNavigate, useLocation } from "react-router";
+import { useEffect, useState, useCallback, useRef } from "react";
+import axios from "../../axiosInstance";
 import { useSelector, useDispatch } from "react-redux";
 import { pledgeToCampaign } from "../../redux/slices/pledgeSlice";
 import toast, { Toaster } from "react-hot-toast";
@@ -9,6 +9,7 @@ import CommentSection from "../../components/CommentSection";
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { user, token } = useSelector((state) => state.auth);
 
@@ -16,34 +17,78 @@ const CampaignDetail = () => {
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
 
-  const fetchCampaign = async () => {
+  // Single mutable ref for the entire lifecycle
+  const componentState = useRef({
+    hasCountedView: false,
+    requestInProgress: false,
+    mounted: false
+  });
+
+  const fetchCampaign = useCallback(async () => {
+    if (!componentState.current.mounted) return;
+    
     try {
-      const res = await axios.get(`http://localhost:5000/api/campaigns/${id}`);
+      const res = await axios.get(`/api/campaigns/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       setCampaign(res.data);
     } catch (err) {
       console.error("Failed to load campaign", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, token]);
 
   useEffect(() => {
-    fetchCampaign();
-  }, [id]);
+    componentState.current.mounted = true;
+
+    const countViewAndFetch = async () => {
+      // Return early if view already counted or view counting in progress
+      if (componentState.current.hasCountedView || 
+          componentState.current.requestInProgress || 
+          location.state?.viewCounted) {
+        await fetchCampaign();
+        return;
+      }
+
+      // Set request in progress flag
+      componentState.current.requestInProgress = true;
+
+      try {
+        if (componentState.current.mounted) {
+          await axios.post(`/api/campaigns/${id}/view`);
+          componentState.current.hasCountedView = true;
+        }
+      } catch (err) {
+        console.error("Failed to count view", err);
+      } finally {
+        componentState.current.requestInProgress = false;
+        if (componentState.current.mounted) {
+          await fetchCampaign();
+        }
+      }
+    };
+
+    countViewAndFetch();
+
+    // Cleanup
+    return () => {
+      componentState.current.mounted = false;
+    };
+  }, [id, fetchCampaign]);
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this campaign?"))
+    if (!window.confirm("Are you sure you want to delete this campaign?")) {
       return;
+    }
 
     try {
-      await axios.delete(`http://localhost:5000/api/campaigns/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await axios.delete(`/api/campaigns/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.msg || "Failed to delete campaign");
+      toast.error(err.response?.data?.msg || "Failed to delete campaign");
     }
   };
 
@@ -51,27 +96,27 @@ const CampaignDetail = () => {
     e.preventDefault();
 
     if (!amount || isNaN(amount) || amount <= 0) {
-      return alert("Please enter a valid amount");
+      toast.error("Please enter a valid amount");
+      return;
     }
 
     try {
-      await dispatch(
-        pledgeToCampaign({ campaignId: id, amount, token })
-      ).unwrap();
+      await dispatch(pledgeToCampaign({ campaignId: id, amount, token })).unwrap();
       toast.success("Pledged successfully");
-
-      // Fetch updated campaign data from backend
-      fetchCampaign();
-
+      await fetchCampaign();
       setAmount("");
     } catch (err) {
-      alert(err?.msg || "Failed to pledge");
+      toast.error(err?.msg || "Failed to pledge");
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading campaign...</p>;
-  if (!campaign)
+  if (loading) {
+    return <p className="text-center mt-10">Loading campaign...</p>;
+  }
+
+  if (!campaign) {
     return <p className="text-center text-red-500">Campaign not found</p>;
+  }
 
   const progress = Math.min(
     ((campaign.raisedAmount || 0) / campaign.goal) * 100,
@@ -84,13 +129,9 @@ const CampaignDetail = () => {
     <div className="max-w-3xl mx-auto p-4">
       <Toaster />
       <img
-        src={
-          campaign.image
-            ? `http://localhost:5000${campaign.image}`
-            : "https://via.placeholder.com/300x200?text=No+Image"
-        }
+        src={campaign.image}
         alt={campaign.title}
-        className="w-full h-60 object-cover rounded mb-4"
+        className="w-full h-40 object-cover mb-3 rounded"
       />
       <h1 className="text-3xl font-bold mb-2">{campaign.title}</h1>
       <p className="text-gray-600 mb-4">
@@ -146,7 +187,9 @@ const CampaignDetail = () => {
           </button>
         </div>
       )}
-      <div className="mt-4"><CommentSection campaignId={id} /></div>
+      <div className="mt-4">
+        <CommentSection campaignId={id} />
+      </div>
     </div>
   );
 };

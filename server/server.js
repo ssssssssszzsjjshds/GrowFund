@@ -11,6 +11,7 @@ import commentRoutes from "./routes/commentRouter.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import saveCampaignRoutes from "./routes/saveCampaign.js"; // <-- Add this line
 import cookieParser from "cookie-parser";
+import authRoutes from "./routes/authRouter.js";
 
 dotenv.config();
 connectDb();
@@ -41,6 +42,6 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/pledges", pledgeRoutes);
 app.use("/api/save-campaign", saveCampaignRoutes); // <-- Add this line
 app.use("/api/admin", adminRoutes);
-
+app.use("/api/auth", authRoutes);
 // ✅ Start server
 app.listen(5000, () => console.log("Server is running on port 5000"));

@@ -85,3 +85,12 @@ export const logout = (req, res) => {
   });
   res.status(200).json({ msg: "Logged out" });
 };
+
+
+export const getMe = (req, res) => {
+  // req.user should be set by your verifyToken middleware
+  if (!req.user) {
+    return res.status(401).json({ msg: "Not authenticated" });
+  }
+  res.status(200).json({ user: req.user });
+};

@@ -1,22 +1,14 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { useSelector } from "react-redux";
-
+import axios from "../axiosInstance"; // Use your axios instance with withCredentials: true
 import AdminCampaignCard from "./AdminCampaignCard";
 
 const ReviewCampaigns = () => {
-  const { token } = useSelector((state) => state.auth);
   const [pending, setPending] = useState([]);
 
   useEffect(() => {
     const fetchPending = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/admin/review-campaigns",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get("/api/admin/review-campaigns");
         setPending(res.data);
       } catch (err) {
         console.error("Failed to fetch pending campaigns", err);
@@ -24,7 +16,7 @@ const ReviewCampaigns = () => {
     };
 
     fetchPending();
-  }, [token]);
+  }, []);
 
   if (pending.length === 0) {
     return <p className="text-center text-gray-500">No pending campaigns.</p>;
