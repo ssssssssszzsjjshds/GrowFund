@@ -6,7 +6,6 @@ import User from "../models/User.js";
  * Attaches user (without password) to req.user if valid.
  */
 export const verifyToken = async (req, res, next) => {
-  // Get token from HTTP-only cookie
   const token = req.cookies?.token;
 
   if (!token) {

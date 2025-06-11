@@ -37,6 +37,7 @@ const Nav = () => {
               <Link to="/saved-campaigns" className={styles.savedCampaigns}>
                 Saved Campaigns
               </Link>
+              <Link to = "/mock-payment">Mock Payment</Link>
               <button onClick={() => handeLogout()}>Logout</button>
             </>
           ) : (

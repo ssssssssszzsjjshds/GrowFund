@@ -1,32 +1,39 @@
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
 
+// Register a new user
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // Check if user already exists
     const exists = await User.findOne({ email });
     if (exists)
       return res.status(400).json({ msg: "Email already registered" });
 
-    const hash = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ name, email, password: hash });
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const token = jwt.sign(
-      { id: newUser._id, role: newUser.role },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    // Create the new user
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
+    // Generate JWT
+    const token = newUser.generateJWT(); // Ensure this method exists in the User model
+
+    // Set cookie and respond
     res
       .cookie("token", token, {
         httpOnly: true,
         sameSite: "Lax",
-        secure: false,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .status(201)
       .json({
@@ -38,30 +45,34 @@ export const register = async (req, res) => {
         },
       });
   } catch (err) {
+    console.error("Register error:", err); // Log error for debugging
     res.status(500).json({ msg: "Register error", error: err.message });
   }
 };
 
+// Login user
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
+    // Compare passwords
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ msg: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    // Generate JWT
+    const token = user.generateJWT();
 
+    // Set cookie and respond
     res
       .cookie("token", token, {
         httpOnly: true,
         sameSite: "Lax",
-        secure: false,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .json({
         user: {
@@ -72,25 +83,36 @@ export const login = async (req, res) => {
         },
       });
   } catch (err) {
+    console.error("Login error:", err); // Log error for debugging
     res.status(500).json({ msg: "Login error", error: err.message });
   }
 };
 
+// Logout user
 export const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    sameSite: "lax", // or your setting
-    secure: process.env.NODE_ENV === "production", // if using HTTPS in prod
-    path: "/", // must match the original cookie's path!
-  });
-  res.status(200).json({ msg: "Logged out" });
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+    res.status(200).json({ msg: "Logged out" });
+  } catch (err) {
+    console.error("Logout error:", err); // Log error for debugging
+    res.status(500).json({ msg: "Logout error", error: err.message });
+  }
 };
 
-
+// Get current user info
 export const getMe = (req, res) => {
-  // req.user should be set by your verifyToken middleware
-  if (!req.user) {
-    return res.status(401).json({ msg: "Not authenticated" });
+  try {
+    if (!req.user) {
+      return res.status(401).json({ msg: "Not authenticated" });
+    }
+    res.status(200).json({ user: req.user });
+  } catch (err) {
+    console.error("GetMe error:", err); // Log error for debugging
+    res.status(500).json({ msg: "GetMe error", error: err.message });
   }
-  res.status(200).json({ user: req.user });
 };

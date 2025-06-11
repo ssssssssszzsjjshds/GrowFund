@@ -17,6 +17,7 @@ import AdminReviewDetail from "../components/AdminReviewDetail";
 import ReviewCampaigns from "../components/ReviewCampaigns";
 import SavedCampaigns from "../pages/savedCampaigns/SavedCampaigns";
 import App from "../App";
+import MockPaymentPage from "../components/MockPaymentPage";
 
 const router = createBrowserRouter([
   {
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: '/saved-campaigns',
         element: <SavedCampaigns />
+      },
+      {
+        path :"/mock-payment",
+        element : <MockPaymentPage />
       }
     ],
   },
