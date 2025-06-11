@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -17,8 +17,8 @@ const Register = () => {
   useEffect(() => {
     if (user) {
       toast.dismiss(); // Clear any lingering toast messages
-      toast.error("You're already logged in.");
-      navigate("/");
+      toast.error("You are already registered. Please log in.");
+      navigate("/login");
     }
   }, [user, navigate]);
 
@@ -50,7 +50,12 @@ const Register = () => {
       setLoading(false);
       const errorMessage =
         error.response?.data?.msg || "Failed to register manually.";
-      toast.error(errorMessage);
+      if (error.response?.data?.alreadyRegistered) {
+        toast.error("You are already registered. Please log in.");
+        navigate("/login"); // Redirect to login page if user is already registered
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 

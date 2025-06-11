@@ -33,7 +33,7 @@ router.get(
     try {
       const token = req.user.generateJWT(); // Assuming generateJWT is defined in the User model
       res.cookie("token", token, { httpOnly: true });
-       res.redirect(`${process.env.FRONTEND_URL}/`); // Redirect to homepage after successful login
+      res.redirect(`${process.env.FRONTEND_URL}/`); // Redirect to homepage after successful login
     } catch (error) {
       console.error("Error handling Google callback:", error);
       res.status(500).send("Internal Server Error");
@@ -53,7 +53,7 @@ router.get(
     // Successful login, generate JWT or set session
     const token = req.user.generateJWT(); // Assume `generateJWT` method in User model
     res.cookie("token", token, { httpOnly: true });
-    res.redirect("/");
+    res.redirect(`${process.env.FRONTEND_URL}/`);
   }
 );
 

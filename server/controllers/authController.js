@@ -9,10 +9,14 @@ export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
+    // Check if the user already exists
     const exists = await User.findOne({ email });
-    if (exists)
-      return res.status(400).json({ msg: "Email already registered" });
+    if (exists) {
+      return res.status(400).json({
+        msg: "Email already registered",
+        alreadyRegistered: true, // Custom flag for frontend handling
+      });
+    }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,26 +28,16 @@ export const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    // Generate JWT
-    const token = newUser.generateJWT(); // Ensure this method exists in the User model
-
-    // Set cookie and respond
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        sameSite: "Lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      })
-      .status(201)
-      .json({
-        user: {
-          _id: newUser._id,
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
-        },
-      });
+    // Respond without setting a cookie or logging in
+    res.status(201).json({
+      msg: "Registration successful. Please log in.",
+      user: {
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
+    });
   } catch (err) {
     console.error("Register error:", err); // Log error for debugging
     res.status(500).json({ msg: "Register error", error: err.message });
