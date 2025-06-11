@@ -29,6 +29,7 @@ const campaignSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
+    viewHistory: [{ timestamp: Date }],
   },
 
   { timestamps: true }

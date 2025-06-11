@@ -2,23 +2,28 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useLocation, useNavigate } from "react-router";
+import FilterBar from "../../../../shared/FilterBar";
 
 const API_BASE = "http://localhost:5000";
 
 const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [savedCampaigns, setSavedCampaigns] = useState([]);
+  const [filter, setFilter] = useState("most_recent");
   const location = useLocation();
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search);
   const category = query.get("category");
+
+  // Determine if we are on the home page ("/")
+ const isHomePage = location.pathname === "/" && !category;
 
   // Fetch campaigns
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
         const res = await axios.get(`${API_BASE}/api/campaigns`, {
-          params: { category },
+          params: { category, filter },
           withCredentials: true,
         });
         setCampaigns(res.data);
@@ -27,7 +32,7 @@ const CampaignList = () => {
       }
     };
     fetchCampaigns();
-  }, [category]);
+  }, [category, filter]);
 
   // Fetch saved campaigns for the logged-in user
   useEffect(() => {
@@ -36,11 +41,8 @@ const CampaignList = () => {
         const res = await axios.get(`${API_BASE}/api/save-campaign`, {
           withCredentials: true,
         });
-        // res.data is array of campaign objects or ids
-        // If your API returns objects, extract IDs:
         setSavedCampaigns(res.data.map(c => c._id || c));
       } catch (err) {
-        // It's fine if not logged in
         setSavedCampaigns([]);
       }
     };
@@ -80,6 +82,12 @@ const CampaignList = () => {
       <h2 className="text-2xl font-bold mb-4">
         {category ? `Category: ${category}` : "All Campaigns"}
       </h2>
+      {/* Only show FilterBar if NOT home page */}
+      {!isHomePage && (
+        <FilterBar filter={filter} setFilter={setFilter} />
+      )}
+      {/* You can remove this line if you don't want to show filter info */}
+      {!isHomePage && <div>Current filter: {filter}</div>}
       {campaigns.length === 0 ? (
         <p>No campaigns found.</p>
       ) : (
@@ -108,7 +116,6 @@ const CampaignList = () => {
               />
               <p className="text-sm text-gray-600 mt-2">{c.category}</p>
 
-              {/* Save/Unsave Button */}
               {savedCampaigns.includes(c._id) ? (
                 <button
                   onClick={(e) => handleUnsave(e, c._id)}

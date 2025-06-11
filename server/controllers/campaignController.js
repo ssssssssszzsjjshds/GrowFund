@@ -41,40 +41,75 @@ export const createCampaign = async (req, res) => {
 export const getAllCampaigns = async (req, res) => {
   try {
     const filter = {};
-    const { search, userId, category, sortBy } = req.query;
+    const { search, userId, category, filter: filterType } = req.query;
 
-    if (category) {
-      filter.category = category;
-    }
+    if (category) filter.category = category;
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
       ];
     }
-
     if (userId) {
       filter.creator = userId;
     } else {
       filter.status = "approved";
     }
 
-    // Add sorting options
-    let sort = { createdAt: -1 }; // default sort
-    if (sortBy === "views") {
-      sort = { views: -1 };
-    }
+    let campaigns;
 
-    const campaigns = await Campaign.find(filter)
-      .select(sortBy === "views" ? "+views" : "-views")
-      .sort(sort);
+    if (filterType === "popular") {
+      // Step 1: Try to find campaigns with >=100 views in the last hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+      let popular = await Campaign.aggregate([
+        { $match: filter },
+        { $project: {
+            title: 1,
+            description: 1,
+            goal: 1,
+            raisedAmount: 1,
+            views: 1,
+            viewHistory: 1,
+            image: 1,
+            category: 1,
+            creator: 1,
+            createdAt: 1,
+            recentViews: {
+              $filter: {
+                input: "$viewHistory",
+                as: "view",
+                cond: { $gte: ["$$view.timestamp", oneHourAgo] }
+              }
+            }
+          }
+        },
+        { $addFields: { recentViewCount: { $size: "$recentViews" } } },
+        { $match: { recentViewCount: { $gte: 100 } } },
+        { $sort: { recentViewCount: -1 } }
+      ]);
+
+      if (popular.length > 0) {
+        campaigns = popular;
+      } else {
+        // Step 2: Fallback to all-time most viewed
+        campaigns = await Campaign.find(filter).sort({ views: -1 }).exec();
+      }
+    } else {
+      // Default, most_viewed, most_recent, most_pledged, etc.
+      let sort = { createdAt: -1 };
+      if (filterType === "most_viewed") sort = { views: -1 };
+      if (filterType === "most_pledged") sort = { raisedAmount: -1 };
+      if (filterType === "most_recent") sort = { createdAt: -1 };
+
+      campaigns = await Campaign.find(filter).sort(sort).exec();
+    }
 
     res.json(campaigns);
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
 };
-
 export const getMyCampaigns = async (req, res) => {
   try {
     const userId = req.user.id;
