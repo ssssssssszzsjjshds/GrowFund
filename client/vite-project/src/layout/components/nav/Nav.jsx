@@ -55,8 +55,9 @@ const Nav = () => {
           </li>
           <li>
             <Link to="/admin">Admin</Link>
+
           </li>
-          <li>Category 3</li>
+          <li><Link to='/messages'>Messages</Link></li>
           <li>Category 4</li>
           <li>Category 5</li>
         </ul>
