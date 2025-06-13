@@ -8,6 +8,16 @@ export const createCampaign = async (req, res) => {
     const { title, description, goal, deadline, category } = req.body;
     const image = req.file ? `/uploads/${req.file.filename}` : null;
 
+    // Parse blocks from JSON string, fallback to []
+    let blocks = [];
+    if (req.body.blocks) {
+      try {
+        blocks = JSON.parse(req.body.blocks);
+      } catch (err) {
+        blocks = [];
+      }
+    }
+
     const numericGoal = Number(goal);
     if (isNaN(numericGoal) || numericGoal <= 0) {
       return res.status(400).json({ msg: "Goal must be a positive number" });
@@ -20,6 +30,7 @@ export const createCampaign = async (req, res) => {
     const status =
       numericGoal < 100 || numericGoal > 10000 ? "pending" : "approved";
 
+    // Save parsed blocks!
     const campaign = new Campaign({
       title,
       description,
@@ -29,6 +40,7 @@ export const createCampaign = async (req, res) => {
       image,
       creator: req.user.id,
       status,
+      blocks,
     });
 
     await campaign.save();
@@ -213,7 +225,23 @@ export const updateCampaign = async (req, res) => {
         .status(403)
         .json({ msg: "Not authorized to update this campaign" });
 
-    Object.assign(campaign, req.body);
+    // Only update fields that are present in req.body
+    const updatableFields = [
+      "title",
+      "description",
+      "goal",
+      "deadline",
+      "category",
+      "blocks", // Allow updating blocks!
+      "image",
+      "status",
+    ];
+    updatableFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        campaign[field] = req.body[field];
+      }
+    });
+
     await campaign.save();
 
     res.json({ msg: "Campaign updated", campaign });

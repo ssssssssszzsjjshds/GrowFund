@@ -1,6 +1,24 @@
 import mongoose from "mongoose";
 import { categories } from "../../shared/categories.js"; // adjust path if needed
 
+const blockSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["text", "image"],
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true, // For text: the text itself; For image: the image URL
+    },
+    order: {
+      type: Number,
+      required: true,
+    },
+  },
+  { _id: false }
+);
 const campaignSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
@@ -30,6 +48,10 @@ const campaignSchema = new mongoose.Schema(
       select: false,
     },
     viewHistory: [{ timestamp: Date }],
+    blocks: {
+      type: [blockSchema],
+      default: [],
+    },
   },
 
   { timestamps: true }

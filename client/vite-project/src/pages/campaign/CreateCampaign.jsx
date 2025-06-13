@@ -1,11 +1,55 @@
+import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import axios from "../../axiosInstance.js"; // Use your axios instance with withCredentials: true
+import axios from "../../axiosInstance.js";
 import { useNavigate } from "react-router";
 import { categories } from "../../../../../shared/categories.js";
 
+const emptyTextBlock = { type: "text", content: "", order: 0 };
+const emptyImageBlock = { type: "image", content: "", order: 0 };
+
 const CreateCampaign = () => {
   const navigate = useNavigate();
+  const [blocks, setBlocks] = useState([]);
+
+  // Add text block
+  const addTextBlock = () => {
+    setBlocks([
+      ...blocks,
+      { ...emptyTextBlock, order: blocks.length },
+    ]);
+  };
+
+  // Add image block
+  const addImageBlock = () => {
+    setBlocks([
+      ...blocks,
+      { ...emptyImageBlock, order: blocks.length },
+    ]);
+  };
+
+  // Remove block
+  const removeBlock = (idx) => {
+    setBlocks(blocks.filter((_, i) => i !== idx).map((b, i) => ({ ...b, order: i })));
+  };
+
+  // Update block content
+  const updateBlockContent = (idx, content) => {
+    setBlocks(
+      blocks.map((block, i) =>
+        i === idx ? { ...block, content } : block
+      )
+    );
+  };
+
+  // If image: handle file input and store as Data URL
+  const handleImageInput = (idx, file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      updateBlockContent(idx, reader.result); // Store as base64 for this demo; in prod, upload and use URL
+    };
+    reader.readAsDataURL(file);
+  };
 
   const initialValues = {
     title: "",
@@ -39,13 +83,13 @@ const CreateCampaign = () => {
       if (values.image) {
         formData.append("image", values.image);
       }
+      // ADD blocks as JSON string
+      formData.append("blocks", JSON.stringify(blocks));
 
       await axios.post("/api/campaigns", formData, {
         headers: {
-          // No Authorization header needed!
           "Content-Type": "multipart/form-data",
         },
-        // Axios instance should already have withCredentials: true
       });
 
       navigate("/");
@@ -66,6 +110,7 @@ const CreateCampaign = () => {
       >
         {({ isSubmitting, setFieldValue }) => (
           <Form className="space-y-4" encType="multipart/form-data">
+            {/* Title */}
             <Field
               name="title"
               placeholder="Title"
@@ -73,6 +118,7 @@ const CreateCampaign = () => {
             />
             <ErrorMessage name="title" component="div" className="text-red-500" />
 
+            {/* Description */}
             <Field
               as="textarea"
               name="description"
@@ -81,6 +127,81 @@ const CreateCampaign = () => {
             />
             <ErrorMessage name="description" component="div" className="text-red-500" />
 
+            {/* Campaign Icon */}
+            <div>
+              <label className="block mb-1 font-semibold">Icon</label>
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={(e) => setFieldValue("image", e.target.files[0])}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+
+            {/* Dynamic Content Blocks */}
+            <div>
+              <div className="mb-4 flex gap-2">
+                <button
+                  type="button"
+                  className="bg-green-600 text-white px-3 py-1 rounded"
+                  onClick={addTextBlock}
+                >
+                  Add Text
+                </button>
+                <button
+                  type="button"
+                  className="bg-indigo-600 text-white px-3 py-1 rounded"
+                  onClick={addImageBlock}
+                >
+                  Add Image
+                </button>
+              </div>
+              {blocks.length > 0 && (
+                <div className="mb-4 space-y-2">
+                  {blocks.map((block, idx) => (
+                    <div key={idx} className="border p-2 rounded relative">
+                      <button
+                        type="button"
+                        className="absolute top-2 right-2 text-red-500"
+                        onClick={() => removeBlock(idx)}
+                        title="Remove block"
+                      >
+                        &times;
+                      </button>
+                      {block.type === "text" ? (
+                        <textarea
+                          className="w-full p-2 border rounded"
+                          value={block.content}
+                          onChange={(e) => updateBlockContent(idx, e.target.value)}
+                          placeholder="Enter text..."
+                          rows={3}
+                        />
+                      ) : (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              e.target.files[0] && handleImageInput(idx, e.target.files[0])
+                            }
+                          />
+                          {block.content && (
+                            <img
+                              src={block.content}
+                              alt="Block"
+                              className="max-w-full h-32 object-cover mt-2"
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Goal */}
             <Field
               type="number"
               name="goal"
@@ -89,14 +210,7 @@ const CreateCampaign = () => {
             />
             <ErrorMessage name="goal" component="div" className="text-red-500" />
 
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={(e) => setFieldValue("image", e.target.files[0])}
-              className="w-full p-2 border rounded"
-            />
-
+            {/* Deadline */}
             <Field
               type="date"
               name="deadline"
@@ -104,6 +218,7 @@ const CreateCampaign = () => {
             />
             <ErrorMessage name="deadline" component="div" className="text-red-500" />
 
+            {/* Category */}
             <Field
               as="select"
               name="category"

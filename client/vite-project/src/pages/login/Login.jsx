@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import toast, { Toaster } from "react-hot-toast";
@@ -8,6 +8,8 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((state) => state.auth);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -32,7 +34,11 @@ const Login = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    toast.error("Use Facebook or Google to log in.");
+    if (!email || !password) {
+      toast.error("Please enter email and password.");
+      return;
+    }
+    dispatch(loginUser({ email, password }));
   };
 
   return (
@@ -42,12 +48,14 @@ const Login = () => {
       <button
         onClick={() => handleOAuthLogin("google")}
         className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 w-full"
+        disabled={loading}
       >
         Login with Google
       </button>
       <button
         onClick={() => handleOAuthLogin("facebook")}
         className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 w-full"
+        disabled={loading}
       >
         Login with Facebook
       </button>
@@ -56,20 +64,30 @@ const Login = () => {
           type="email"
           placeholder="Email"
           className="w-full border p-2 rounded"
-          disabled
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
+          autoComplete="username"
         />
         <input
           type="password"
           placeholder="Password"
           className="w-full border p-2 rounded"
-          disabled
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
+          autoComplete="current-password"
         />
         <button
           type="submit"
-          className="bg-gray-400 text-white py-2 px-4 rounded w-full cursor-not-allowed"
-          disabled
+          className={`py-2 px-4 rounded w-full ${
+            loading
+              ? "bg-gray-400 text-white cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-700"
+          }`}
+          disabled={loading}
         >
-          Login (Disabled)
+          {loading ? "Logging in..." : "Login"}
         </button>
         {error && <p className="text-red-600">{error}</p>}
       </form>
