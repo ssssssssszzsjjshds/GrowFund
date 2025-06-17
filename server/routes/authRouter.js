@@ -4,6 +4,8 @@ import {
   login,
   logout,
   getMe,
+  sendVerificationEmail,
+  verifyEmail,
 } from "../controllers/authController.js";
 import passport from "passport";
 import { verifyToken } from "../middleware/authMiddleware.js";
@@ -56,5 +58,6 @@ router.get(
     res.redirect(`${process.env.FRONTEND_URL}/`);
   }
 );
-
+router.post("/send-verification", sendVerificationEmail);
+router.get("/verify-email", verifyEmail);
 export default router;

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router"; // <-- add useLocation
 import toast, { Toaster } from "react-hot-toast";
 import { loginUser } from "../../redux/slices/authSlice";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // <-- add this
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
@@ -14,13 +15,17 @@ const Login = () => {
   useEffect(() => {
     if (user) {
       toast.dismiss(); // Clear any lingering toast messages
+      // Read "from" location if redirected by PrivateRoute
+      const from = location.state?.from?.pathname;
       if (user.role === "admin") {
         navigate("/admin");
+      } else if (from && from !== "/login") {
+        navigate(from, { replace: true });
       } else {
         navigate("/");
       }
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.state]);
 
   const handleOAuthLogin = (provider) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL; // Vite uses import.meta.env

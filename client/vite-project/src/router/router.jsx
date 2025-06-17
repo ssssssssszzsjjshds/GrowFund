@@ -9,6 +9,7 @@ import CampaignDetail from "../pages/campaignDetails/CampaignDetail";
 import Explore from "../pages/explore/Explore";
 import MyCampaigns from "../pages/mycampaign/MyCampaigns";
 import CampaignEdit from "../pages/campaignEdit/CampaignEdit";
+import PrivateRoute from "./PrivateRoute";
 
 import AdminPanel from "../admin/AdminPanel";
 import AdminCampaignDetail from "../pages/adminCampaignDetail/AdminCampaignDetail";
@@ -19,6 +20,7 @@ import SavedCampaigns from "../pages/savedCampaigns/SavedCampaigns";
 import App from "../App";
 import MockPaymentPage from "../components/MockPaymentPage";
 import MessagesPage from "../pages/messages/MessagesPage";
+import UserProfileSettings from "../pages/userProfileSettings/UserProfileSettings";
 
 const router = createBrowserRouter([
   {
@@ -51,6 +53,14 @@ const router = createBrowserRouter([
         element: <MockPaymentPage />,
       },
       { path: "/messages", element: <MessagesPage /> },
+      {
+        path: "/settings/profile",
+        element: (
+          <PrivateRoute>
+            <UserProfileSettings />
+          </PrivateRoute>
+        ),
+      },
     ],
   },
   {

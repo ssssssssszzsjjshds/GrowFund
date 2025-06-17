@@ -116,7 +116,7 @@ const Nav = () => {
                         </li>
                         <li>
                           <Link
-                            to="/settings"
+                            to="/settings/profile"
                             className="hover:underline"
                             onClick={() => setMenuOpen(false)}
                           >

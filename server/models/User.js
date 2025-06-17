@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-
-
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -35,6 +33,11 @@ const userSchema = new mongoose.Schema(
       sparse: true, // Allows null values for unique index
     },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    instagram: { type: String, default: "" },
+    facebook: { type: String, default: "" },
+    linkedin: { type: String, default: "" },
+    portfolio: { type: String, default: "" },
+    emailVerified: { type: Boolean, default: false },
     savedCampaigns: [
       {
         type: mongoose.Schema.Types.ObjectId,

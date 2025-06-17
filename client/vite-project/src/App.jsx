@@ -1,10 +1,20 @@
-import React from 'react'
-import Layout from './layout/Layout'
+import React from "react";
+import Layout from "./layout/Layout";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { checkAuth } from "./redux/slices/authSlice";
 
 const App = () => {
-  return (
-    <div><Layout /></div>
-  )
-}
+  const dispatch = useDispatch();
 
-export default App
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+  return (
+    <div>
+      <Layout />
+    </div>
+  );
+};
+
+export default App;
