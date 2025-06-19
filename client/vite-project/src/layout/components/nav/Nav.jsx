@@ -78,6 +78,21 @@ const Nav = () => {
                         YOUR ACCOUNT
                       </div>
                       <ul className="space-y-2">
+                        {/* Balance section START */}
+                      <div className="mb-3">
+                        <span className="text-gray-600 text-xs">Balance:</span>
+                        <span className="ml-2 font-bold text-blue-600">
+                          ${user.balance != null ? user.balance.toFixed(2) : "0.00"}
+                        </span>
+                        <Link
+                          to="/mock-payment"
+                          className="ml-4 text-xs underline text-green-600 hover:text-green-800"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          Add Funds
+                        </Link>
+                      </div>
+                      {/* Balance section END */}
                         <li>
                           <Link
                             to="/saved-campaigns"
