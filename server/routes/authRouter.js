@@ -15,21 +15,21 @@ const router = express.Router();
 dotenv.config();
 
 // Local Authentication
-router.post("/api/auth/register", register);
-router.post("/api/auth/login", login);
-router.post("/api/auth/logout", logout);
+router.post("/register", register);
+router.post("/login", login);
+router.post("/logout", logout);
 
 // Get Authenticated User
-router.get("/api/auth/me", verifyToken, getMe);
+router.get("/me", verifyToken, getMe);
 
 // Google OAuth Routes
 router.get(
-  "/api/auth/google",
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 router.get(
-  "/api/auth/google/callback",
+  "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   async (req, res) => {
     try {
@@ -45,11 +45,12 @@ router.get(
 
 // Facebook OAuth Routes
 router.get(
-  "/api/auth/facebook",
+  "/facebook",
   passport.authenticate("facebook", { scope: ["email"] })
 );
+
 router.get(
-  "/api/auth/facebook/callback",
+  "/facebook/callback",
   passport.authenticate("facebook", { failureRedirect: "/login" }),
   (req, res) => {
     // Successful login, generate JWT or set session
@@ -58,6 +59,55 @@ router.get(
     res.redirect(`${process.env.FRONTEND_URL}/`);
   }
 );
+
+// Email verification
 router.post("/send-verification", sendVerificationEmail);
 router.get("/verify-email", verifyEmail);
+
+router.get('/verified-success', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Email Verified</title>
+      <style>
+        body { display: flex; align-items: center; justify-content: center; height: 100vh; background: #f7f7f7; }
+        .box {
+          background: #fff;
+          padding: 2rem 3rem;
+          border-radius: 10px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+          text-align: center;
+        }
+        .success { color: #28a745; font-size: 2rem; margin-bottom: 1rem; }
+        .redirect { color: #888; margin-top: 1rem; }
+        button {
+          margin-top: 1.5rem;
+          padding: 0.5rem 1.2rem;
+          background: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 1rem;
+        }
+        button:hover { background: #0056b3; }
+      </style>
+      <script>
+        setTimeout(function() {
+          window.location = "http://localhost:5173/settings/profile";
+        }, 5000);
+      </script>
+    </head>
+    <body>
+      <div class="box">
+        <div class="success">&#10003; Email verification successful!</div>
+        <div class="redirect">Redirecting to your profile in 5 seconds...</div>
+        <button onclick="window.location='http://localhost:5173/settings/profile'">Go to Profile Now</button>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
 export default router;

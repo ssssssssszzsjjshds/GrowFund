@@ -54,7 +54,7 @@ app.use(passport.session());
 app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.use("/", CampaignRouter);
-app.use("/", AuthRouter);
+
 app.use("/api/comments", commentRoutes);
 app.use("/api/pledges", pledgeRoutes);
 app.use("/api/save-campaign", saveCampaignRoutes);
@@ -129,4 +129,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(5000, () => console.log("Server is running on port 5000 (with sockets)"));
+server.listen(5000, () =>
+  console.log("Server is running on port 5000 (with sockets)")
+);

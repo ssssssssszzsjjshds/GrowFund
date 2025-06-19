@@ -117,30 +117,47 @@ export const getMe = (req, res) => {
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.GMAIL_USER, // set this in your .env file
+    pass: process.env.GMAIL_PASS, // set this in your .env file (App Password)
+  },
+  tls: {
+    rejectUnauthorized: false, // <-- add this line
   },
 });
-
 // Send verification email
 export const sendVerificationEmail = async (req, res) => {
+  // Defensive: log and check body
+  if (!req.body || !req.body.email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  // Defensive: handle possible undefined
   const email = req.body.email.toLowerCase().trim();
-  const user = await User.findOne({ email }); // use "user" here
-  if (!user) return res.status(404).json({ message: "User not found" });
 
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
-  });
-  const verifyUrl = `https://yourdomain.com/api/auth/verify-email?token=${token}`;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-  // Send email
-  await transporter.sendMail({
-    to: user.email,
-    subject: "Verify your email",
-    html: `<p>Click to verify your email: <a href="${verifyUrl}">${verifyUrl}</a></p>`,
-  });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    const verifyUrl = `http://localhost:5000/api/auth/verify-email?token=${token}`;
 
-  res.json({ message: "Verification email sent" });
+    // Send email
+    await transporter.sendMail({
+      to: user.email,
+      subject: "Verify your email",
+      html: `<p>Click to verify your email: <a href="${verifyUrl}">${verifyUrl}</a></p>`,
+    });
+
+    res.json({ message: "Verification email sent" });
+  } catch (err) {
+    console.error("Error in sendVerificationEmail:", err);
+    res.status(500).json({
+      message: "Failed to send verification email",
+      error: err.message,
+    });
+  }
 };
 
 // Handle verification link
@@ -155,7 +172,7 @@ export const verifyEmail = async (req, res) => {
     await user.save();
 
     // Redirect to frontend with a success message
-    res.redirect("https://yourfrontend.com/verified-success");
+    res.redirect("http://localhost:5000/api/auth/verified-success");
   } catch (err) {
     res.status(400).send("Invalid or expired token");
   }

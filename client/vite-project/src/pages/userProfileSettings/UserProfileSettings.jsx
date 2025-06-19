@@ -11,7 +11,7 @@ const UserProfileSettings = () => {
     facebook: "",
     linkedin: "",
     portfolio: "",
-    provider: "", // <-- add provider field to hold auth type
+    provider: "",
   });
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
@@ -21,16 +21,18 @@ const UserProfileSettings = () => {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await axios.get("/api/users/me", { withCredentials: true });
+        const res = await axios.get("/api/auth/me", { withCredentials: true });
+        // Unwrap the user object from backend's response
+        const user = res.data.user || {};
         setProfile({
-          name: res.data.name || "",
-          email: res.data.email || "",
-          emailVerified: res.data.emailVerified || false,
-          instagram: res.data.instagram || "",
-          facebook: res.data.facebook || "",
-          linkedin: res.data.linkedin || "",
-          portfolio: res.data.portfolio || "",
-          provider: res.data.provider || "", // assumes backend sends provider: "local" | "google" | "facebook"
+          name: user.name || "",
+          email: user.email || "",
+          emailVerified: user.emailVerified || false,
+          instagram: user.instagram || "",
+          facebook: user.facebook || "",
+          linkedin: user.linkedin || "",
+          portfolio: user.portfolio || "",
+          provider: user.provider || "",
         });
       } catch (e) {
         setStatus("Failed to load profile.");
@@ -49,8 +51,9 @@ const UserProfileSettings = () => {
     e.preventDefault();
     setStatus("Saving...");
     try {
+      // Use the correct endpoint - update as per your backend
       await axios.put(
-        "/api/users/me",
+        "/api/auth/me",
         {
           instagram: profile.instagram,
           facebook: profile.facebook,
@@ -66,6 +69,10 @@ const UserProfileSettings = () => {
   };
 
   const handleVerifyEmail = async () => {
+    if (!profile?.email) {
+      setEmailStatus("No email found on your profile.");
+      return;
+    }
     setEmailStatus("Sending verification email...");
     try {
       await axios.post(
