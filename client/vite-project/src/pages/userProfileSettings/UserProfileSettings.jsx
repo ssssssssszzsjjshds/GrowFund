@@ -52,7 +52,7 @@ const UserProfileSettings = () => {
     setStatus("Saving...");
     try {
       // Use the correct endpoint - update as per your backend
-      await axios.put(
+      await axios.patch(
         "/api/auth/me",
         {
           instagram: profile.instagram,

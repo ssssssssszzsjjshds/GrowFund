@@ -21,6 +21,7 @@ import App from "../App";
 import MockPaymentPage from "../components/MockPaymentPage";
 import MessagesPage from "../pages/messages/MessagesPage";
 import UserProfileSettings from "../pages/userProfileSettings/UserProfileSettings";
+import ResetPassword from "../pages/resetPassword/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
             <UserProfileSettings />
           </PrivateRoute>
         ),
+      },
+      {
+        path: "/reset-password/:token",
+        element: <ResetPassword />,
       },
     ],
   },

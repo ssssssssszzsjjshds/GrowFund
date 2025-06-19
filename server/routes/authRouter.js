@@ -6,6 +6,11 @@ import {
   getMe,
   sendVerificationEmail,
   verifyEmail,
+  changePassword,
+  resetPassword,
+  forgotPassword,
+  serveResetPasswordPage,
+  updateMe,
 } from "../controllers/authController.js";
 import passport from "passport";
 import { verifyToken } from "../middleware/authMiddleware.js";
@@ -21,6 +26,7 @@ router.post("/logout", logout);
 
 // Get Authenticated User
 router.get("/me", verifyToken, getMe);
+router.patch("/me", verifyToken, updateMe);
 
 // Google OAuth Routes
 router.get(
@@ -64,7 +70,7 @@ router.get(
 router.post("/send-verification", sendVerificationEmail);
 router.get("/verify-email", verifyEmail);
 
-router.get('/verified-success', (req, res) => {
+router.get("/verified-success", (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -109,5 +115,8 @@ router.get('/verified-success', (req, res) => {
     </html>
   `);
 });
-
+router.post("/change-password", verifyToken, changePassword);
+router.post("/forgot-password", forgotPassword);
+router.get("/reset-password/:token", serveResetPasswordPage);
+router.post("/reset-password/:token", resetPassword);
 export default router;
