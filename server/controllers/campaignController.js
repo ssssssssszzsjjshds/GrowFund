@@ -76,7 +76,8 @@ export const getAllCampaigns = async (req, res) => {
 
       let popular = await Campaign.aggregate([
         { $match: filter },
-        { $project: {
+        {
+          $project: {
             title: 1,
             description: 1,
             goal: 1,
@@ -91,21 +92,29 @@ export const getAllCampaigns = async (req, res) => {
               $filter: {
                 input: "$viewHistory",
                 as: "view",
-                cond: { $gte: ["$$view.timestamp", oneHourAgo] }
-              }
-            }
-          }
+                cond: { $gte: ["$$view.timestamp", oneHourAgo] },
+              },
+            },
+          },
         },
         { $addFields: { recentViewCount: { $size: "$recentViews" } } },
         { $match: { recentViewCount: { $gte: 100 } } },
-        { $sort: { recentViewCount: -1 } }
+        { $sort: { recentViewCount: -1 } },
       ]);
 
       if (popular.length > 0) {
-        campaigns = popular;
+        // Populate creator field for each campaign after aggregation
+        // This is necessary since aggregate does not populate refs
+        campaigns = await Campaign.populate(popular, {
+          path: "creator",
+          select: "name profilePic",
+        });
       } else {
         // Step 2: Fallback to all-time most viewed
-        campaigns = await Campaign.find(filter).sort({ views: -1 }).exec();
+        campaigns = await Campaign.find(filter)
+          .sort({ views: -1 })
+          .populate("creator", "name profilePic")
+          .exec();
       }
     } else {
       // Default, most_viewed, most_recent, most_pledged, etc.
@@ -114,7 +123,10 @@ export const getAllCampaigns = async (req, res) => {
       if (filterType === "most_pledged") sort = { raisedAmount: -1 };
       if (filterType === "most_recent") sort = { createdAt: -1 };
 
-      campaigns = await Campaign.find(filter).sort(sort).exec();
+      campaigns = await Campaign.find(filter)
+        .sort(sort)
+        .populate("creator", "name profilePic")
+        .exec();
     }
 
     res.json(campaigns);
@@ -122,24 +134,27 @@ export const getAllCampaigns = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
+
 export const getMyCampaigns = async (req, res) => {
   try {
     const userId = req.user.id;
-    const campaigns = await Campaign.find({ creator: userId }).sort({
-      createdAt: -1,
-    });
+    const campaigns = await Campaign.find({ creator: userId })
+      .sort({ createdAt: -1 })
+      .populate("creator", "name profilePic");
     res.json(campaigns);
   } catch (err) {
     res.status(500).json({ msg: "Failed to fetch your campaigns" });
   }
 };
+
 export const getMostViewedCampaigns = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5;
     const campaigns = await Campaign.find({ status: "approved" })
       .select("+views")
       .sort({ views: -1 })
-      .limit(limit);
+      .limit(limit)
+      .populate("creator", "name profilePic");
 
     res.json(campaigns);
   } catch (err) {
@@ -158,9 +173,9 @@ export const getCampaignById = async (req, res) => {
       },
       {
         new: true,
-        select: "+views +lastViewedAt", // Explicitly include these fields
+        select: "+views +lastViewedAt",
       }
-    );
+    ).populate("creator", "name profilePic");
 
     if (!campaign) {
       return res.status(404).json({ msg: "Campaign not found" });
@@ -168,21 +183,13 @@ export const getCampaignById = async (req, res) => {
 
     if (
       campaign.status !== "approved" &&
-      (!req.user || campaign.creator.toString() !== req.user.id)
+      (!req.user || campaign.creator._id.toString() !== req.user.id)
     ) {
       return res.status(403).json({ msg: "Campaign not available" });
     }
 
-    // For debugging
-    console.log("Updated campaign:", {
-      id: campaign._id,
-      views: campaign.views,
-      lastViewedAt: campaign.lastViewedAt,
-    });
-
     res.json(campaign);
   } catch (err) {
-    console.error("Error updating campaign views:", err);
     res.status(500).json({ msg: err.message });
   }
 };
@@ -232,7 +239,7 @@ export const updateCampaign = async (req, res) => {
       "goal",
       "deadline",
       "category",
-      "blocks", // Allow updating blocks!
+      "blocks",
       "image",
       "status",
     ];

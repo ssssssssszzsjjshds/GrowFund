@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true, // Allows null values for unique index
     },
+    profilePic: { type: String, default: "" },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     instagram: { type: String, default: "" },
     facebook: { type: String, default: "" },

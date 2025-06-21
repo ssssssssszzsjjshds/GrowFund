@@ -16,7 +16,7 @@ const CampaignList = () => {
   const category = query.get("category");
 
   // Determine if we are on the home page ("/")
- const isHomePage = location.pathname === "/" && !category;
+  const isHomePage = location.pathname === "/" && !category;
 
   // Fetch campaigns
   useEffect(() => {
@@ -41,7 +41,7 @@ const CampaignList = () => {
         const res = await axios.get(`${API_BASE}/api/save-campaign`, {
           withCredentials: true,
         });
-        setSavedCampaigns(res.data.map(c => c._id || c));
+        setSavedCampaigns(res.data.map((c) => c._id || c));
       } catch (err) {
         setSavedCampaigns([]);
       }
@@ -83,9 +83,7 @@ const CampaignList = () => {
         {category ? `Category: ${category}` : "All Campaigns"}
       </h2>
       {/* Only show FilterBar if NOT home page */}
-      {!isHomePage && (
-        <FilterBar filter={filter} setFilter={setFilter} />
-      )}
+      {!isHomePage && <FilterBar filter={filter} setFilter={setFilter} />}
       {/* You can remove this line if you don't want to show filter info */}
       {!isHomePage && <div>Current filter: {filter}</div>}
       {campaigns.length === 0 ? (

@@ -49,7 +49,7 @@ export const getUserProfile = async (req, res) => {
 export const getPublicProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select(
-      "name instagram facebook linkedin portfolio"
+      "name instagram facebook linkedin portfolio createdAt"
     );
     if (!user) return res.status(404).json({ msg: "User not found" });
 
@@ -63,6 +63,7 @@ export const getPublicProfile = async (req, res) => {
       facebook: user.facebook,
       linkedin: user.linkedin,
       portfolio: user.portfolio,
+      createdAt: user.createdAt, // <-- make sure to add this
       createdProjects,
     });
   } catch (err) {

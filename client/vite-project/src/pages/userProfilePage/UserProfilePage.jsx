@@ -50,7 +50,8 @@ export default function UserProfilePage() {
       color: "text-green-700",
     },
   ];
-
+  console.log("createdAt:", profile?.createdAt);
+  console.log("date check:", new Date(profile?.createdAt));
   return (
     <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-3xl font-bold mb-6 text-[#635bff] text-center">
@@ -63,6 +64,12 @@ export default function UserProfilePage() {
       {error && <div className="text-center text-red-500 mb-6">{error}</div>}
       {!loading && profile && (
         <>
+          <div className="text-center text-gray-500 text-sm mb-6">
+            Joined at:{" "}
+            {profile?.createdAt && !isNaN(new Date(profile.createdAt))
+              ? new Date(profile.createdAt).toLocaleDateString()
+              : "Unknown"}
+          </div>
           {/* Social Links */}
           <div className="flex gap-4 justify-center mb-8">
             {socials.map(

@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../axiosInstance";
+import ProfilePicUploader from "../../components/ProfilePicUploader";
 
-// If you use redux, you can get the user from there instead of fetching manually
+// Set your API base URL here or use an environment variable
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const UserProfileSettings = () => {
   const [profile, setProfile] = useState({
     name: "",
@@ -12,6 +16,7 @@ const UserProfileSettings = () => {
     linkedin: "",
     portfolio: "",
     provider: "",
+    profilePic: "",
   });
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
@@ -22,7 +27,6 @@ const UserProfileSettings = () => {
     async function fetchProfile() {
       try {
         const res = await axios.get("/api/auth/me", { withCredentials: true });
-        // Unwrap the user object from backend's response
         const user = res.data.user || {};
         setProfile({
           name: user.name || "",
@@ -33,6 +37,7 @@ const UserProfileSettings = () => {
           linkedin: user.linkedin || "",
           portfolio: user.portfolio || "",
           provider: user.provider || "",
+          profilePic: user.profilePic || "",
         });
       } catch (e) {
         setStatus("Failed to load profile.");
@@ -51,7 +56,6 @@ const UserProfileSettings = () => {
     e.preventDefault();
     setStatus("Saving...");
     try {
-      // Use the correct endpoint - update as per your backend
       await axios.patch(
         "/api/auth/me",
         {
@@ -86,6 +90,17 @@ const UserProfileSettings = () => {
     }
   };
 
+  // Handle new profile picture
+  const handleProfilePicUpload = (newPicUrl) => {
+    setProfile((prev) => ({ ...prev, profilePic: newPicUrl }));
+  };
+
+  // Helper to get the correct profile picture URL:
+  const getProfilePicUrl = (picPath) => {
+    if (!picPath) return "/default-profile.png";
+    return picPath.startsWith("http") ? picPath : `${API_BASE_URL}${picPath}`;
+  };
+
   if (loading) return <div className="p-10 text-center">Loading...</div>;
 
   // Determine if password change should be shown:
@@ -95,6 +110,15 @@ const UserProfileSettings = () => {
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-10">
       <h1 className="text-2xl font-semibold mb-6">Profile Settings</h1>
+
+      {/* Profile Pic Section */}
+      <div className="flex flex-col items-center mb-6">
+        
+        <ProfilePicUploader
+          currentPic={getProfilePicUrl(profile.profilePic)}
+          onUpload={handleProfilePicUpload}
+        />
+      </div>
 
       {/* Email Section */}
       <section className="mb-6">

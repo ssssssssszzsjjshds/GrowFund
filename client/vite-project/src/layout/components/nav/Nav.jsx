@@ -7,6 +7,10 @@ import { categories } from "../../../../../../shared/categories";
 import logo from "../../../assets/logo.png"; // Replace with your logo path
 import CreatedCampaignsMenuList from "../../../components/CreatedCampaignsMenuList";
 
+// Set your API base URL here or use an environment variable
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const Nav = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -42,12 +46,18 @@ const Nav = () => {
     return "?";
   };
 
+  // Helper to get the profile picture URL
+  const getProfilePicUrl = (picPath) => {
+    if (!picPath) return "/default-profile.png";
+    return picPath.startsWith("http") ? picPath : `${API_BASE_URL}${picPath}`;
+  };
+
   return (
     <nav className="w-full bg-white shadow-md">
       <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Logo" className="h-10  object-contain" />
+          <img src={logo} alt="Logo" className="h-10 object-contain" />
         </Link>
         {/* Search Bar */}
         <div className="flex-1 flex justify-center px-8">
@@ -59,12 +69,21 @@ const Nav = () => {
         <div className="flex items-center gap-4">
           {user ? (
             <>
+              {/* Avatar Button */}
               <button
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-lg font-bold text-blue-600 hover:ring-2 ring-blue-400 transition"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-lg font-bold text-blue-600 hover:ring-2 ring-blue-400 transition overflow-hidden"
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label="Open profile menu"
               >
-                {getInitial()}
+                {user.profilePic ? (
+                  <img
+                    src={getProfilePicUrl(user.profilePic)}
+                    alt="Profile"
+                    className="w-10 h-10 object-cover rounded-full"
+                  />
+                ) : (
+                  getInitial()
+                )}
               </button>
               {/* Dropdown Menu */}
               {menuOpen && (

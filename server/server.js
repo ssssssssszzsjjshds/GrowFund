@@ -24,6 +24,7 @@ import messageRoutes from "./routes/messageRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userActivityRouter from "./routes/userActivity.js";
 import userRoute from "./routes/userRoute.js";
+import profilePic from "./routes/profilePic.js";
 
 // Connect to database
 connectDb();
@@ -79,6 +80,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/user", userRoute);
 app.use("/api/user", userActivityRouter);
+app.use("/api/user", profilePic);
 // ----------- SOCKET.IO SETUP -----------
 const server = http.createServer(app);
 
