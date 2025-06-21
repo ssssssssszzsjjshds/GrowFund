@@ -110,7 +110,7 @@ const Nav = () => {
 
                         <li>
                           <Link
-                            to="/profile"
+                            to={`/profile/${user._id}`}
                             className="hover:underline"
                             onClick={() => setMenuOpen(false)}
                           >

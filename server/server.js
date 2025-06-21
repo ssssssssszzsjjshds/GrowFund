@@ -23,15 +23,28 @@ import balanceRouters from "./routes/balanceRouter.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userActivityRouter from "./routes/userActivity.js";
+import userRoute from "./routes/userRoute.js";
 
 // Connect to database
 connectDb();
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.CLIENT_URL || "http://localhost:5173",
+  "http://localhost:3000", // add any others if needed
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -64,6 +77,7 @@ app.use("/api/auth", AuthRouter);
 app.use("/api/balance", balanceRouters);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/user", userRoute);
 app.use("/api/user", userActivityRouter);
 // ----------- SOCKET.IO SETUP -----------
 const server = http.createServer(app);

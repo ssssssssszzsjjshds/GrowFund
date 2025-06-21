@@ -5,4 +5,6 @@ import { searchUsersByName } from "../controllers/userController.js";
 
 router.get("/search", verifyToken, searchUsersByName);
 
+
+
 export default router;

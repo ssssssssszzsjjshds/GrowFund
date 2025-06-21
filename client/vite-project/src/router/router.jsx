@@ -23,6 +23,7 @@ import MessagesPage from "../pages/messages/MessagesPage";
 import UserProfileSettings from "../pages/userProfileSettings/UserProfileSettings";
 import ResetPassword from "../pages/resetPassword/ResetPassword";
 import ActivityPage from "../pages/activity/ActivityPage";
+import UserProfilePage from "../pages/userProfilePage/UserProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -59,7 +60,8 @@ const router = createBrowserRouter([
         element: <ActivityPage />,
       },
       { path: "/messages", element: <MessagesPage /> },
-      {
+      { path: "/profile/:id", element: <UserProfilePage /> }
+      ,{
         path: "/settings/profile",
         element: (
           <PrivateRoute>
