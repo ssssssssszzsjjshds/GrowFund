@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../axiosInstance";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 export default function ActivityPage() {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +16,11 @@ export default function ActivityPage() {
     axios
       .get("/api/user/activity", { withCredentials: true })
       .then((res) => {
-        if (isMounted) setActivity(res.data);
+        // Accept both array or { activity }
+        const acts = Array.isArray(res.data)
+          ? res.data
+          : res.data.activity || [];
+        if (isMounted) setActivity(acts);
       })
       .catch((err) => {
         if (isMounted) setError("Failed to load activity.");
@@ -46,16 +53,20 @@ export default function ActivityPage() {
               key={idx}
               className="flex items-center bg-[#f6f9fc] rounded-lg p-4 border"
             >
-              {pledge.campaignImage && (
+              {pledge.campaignImage ? (
                 <img
-                  src={pledge.campaignImage}
+                  src={`${API_BASE_URL}${pledge.campaignImage}`}
                   alt={pledge.campaignTitle}
                   className="w-16 h-16 object-cover rounded mr-4 border"
                 />
+              ) : (
+                <div className="w-16 h-16 flex items-center justify-center bg-gray-200 text-gray-400 rounded mr-4 border">
+                  <span className="text-2xl">?</span>
+                </div>
               )}
               <div className="flex-1">
                 <div className="font-semibold text-lg text-[#635bff]">
-                  {pledge.campaignTitle}
+                  {pledge.campaignTitle || "[Deleted Campaign]"}
                 </div>
                 <div className="text-gray-600 text-sm">
                   Pledged{" "}

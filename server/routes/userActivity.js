@@ -1,9 +1,9 @@
 import express from "express";
 import { getUserActivity } from "../controllers/userActivityController.js";
+import { verifyToken } from "../middleware/authMiddleware.js"; // <-- Add your auth middleware
 
-// Assumes you have authentication middleware (e.g. requireAuth) that sets req.user
 const router = express.Router();
 
-router.get("/activity", getUserActivity);
+router.get("/activity", verifyToken, getUserActivity); // <-- Add middleware
 
 export default router;
