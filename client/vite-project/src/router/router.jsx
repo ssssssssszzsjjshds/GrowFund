@@ -22,6 +22,7 @@ import MockPaymentPage from "../components/MockPaymentPage";
 import MessagesPage from "../pages/messages/MessagesPage";
 import UserProfileSettings from "../pages/userProfileSettings/UserProfileSettings";
 import ResetPassword from "../pages/resetPassword/ResetPassword";
+import ActivityPage from "../pages/activity/ActivityPage";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: "/mock-payment",
         element: <MockPaymentPage />,
+      },
+      {
+        path: "/activity",
+        element: <ActivityPage />,
       },
       { path: "/messages", element: <MessagesPage /> },
       {

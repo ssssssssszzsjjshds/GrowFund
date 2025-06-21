@@ -22,6 +22,7 @@ import saveCampaignRoutes from "./routes/saveCampaign.js";
 import balanceRouters from "./routes/balanceRouter.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import userActivityRouter from "./routes/userActivity.js";
 
 // Connect to database
 connectDb();
@@ -63,7 +64,7 @@ app.use("/api/auth", AuthRouter);
 app.use("/api/balance", balanceRouters);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
-
+app.use("/api/user", userActivityRouter);
 // ----------- SOCKET.IO SETUP -----------
 const server = http.createServer(app);
 
