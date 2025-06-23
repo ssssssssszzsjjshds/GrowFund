@@ -55,10 +55,22 @@ const Nav = () => {
   return (
     <nav className="w-full bg-white shadow-md">
       <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Logo" className="h-10 object-contain" />
-        </Link>
+        {/* Logo & Admin Link Section */}
+        <div className="flex items-center gap-4">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logo} alt="Logo" className="h-10 object-contain" />
+          </Link>
+          {/* Conditionally render Admin Panel link */}
+          {user && user.role === "admin" && (
+            <Link
+              to="/admin"
+              className="ml-3 px-3 py-1 rounded bg-yellow-100 text-yellow-700 font-semibold text-sm hover:bg-yellow-200 transition"
+            >
+              Admin Panel
+            </Link>
+          )}
+        </div>
         {/* Search Bar */}
         <div className="flex-1 flex justify-center px-8">
           <div className="w-full max-w-lg">

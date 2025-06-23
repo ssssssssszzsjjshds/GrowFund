@@ -60,8 +60,8 @@ const router = createBrowserRouter([
         element: <ActivityPage />,
       },
       { path: "/messages", element: <MessagesPage /> },
-      { path: "/profile/:id", element: <UserProfilePage /> }
-      ,{
+      { path: "/profile/:id", element: <UserProfilePage /> },
+      {
         path: "/settings/profile",
         element: (
           <PrivateRoute>
