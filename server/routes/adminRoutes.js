@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyToken } from "../middleware/authMiddleware.js";
-import { verifyAdmin } from "../middleware/adminMiddleware.js";
+import { requireAdmin as verifyAdmin } from "../middleware/adminMiddleware.js";
 import {
   getAllUsers,
   getAllNonPendingCampaigns,
@@ -8,7 +8,7 @@ import {
   approveCampaign,
   rejectCampaign,
   updateCampaignStatus,
-  getCampaignById
+  getCampaignById,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -16,9 +16,21 @@ const router = express.Router();
 router.get("/users", verifyToken, verifyAdmin, getAllUsers);
 router.get("/campaigns", verifyToken, verifyAdmin, getAllNonPendingCampaigns);
 router.get("/review-campaigns", verifyToken, verifyAdmin, getPendingCampaigns);
-router.patch("/campaigns/:id/approve", verifyToken, verifyAdmin, approveCampaign);
+router.patch(
+  "/campaigns/:id/approve",
+  verifyToken,
+  verifyAdmin,
+  approveCampaign
+);
 router.patch("/campaigns/:id/reject", verifyToken, verifyAdmin, rejectCampaign);
-router.put("/campaigns/:id/status", verifyToken, verifyAdmin, updateCampaignStatus);
+router.put(
+  "/campaigns/:id/status",
+  verifyToken,
+  verifyAdmin,
+  updateCampaignStatus
+);
 router.get("/campaigns/:id", verifyToken, getCampaignById);
-
+router.get("/dashboard", verifyToken, verifyAdmin, (req, res) => {
+  res.json({ secret: "This is admin stuff." });
+});
 export default router;

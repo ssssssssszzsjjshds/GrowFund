@@ -23,3 +23,19 @@ export const verifyToken = async (req, res, next) => {
     return res.status(401).json({ msg: "Invalid or expired token" });
   }
 };
+
+export const requireAuth = async (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ msg: "Not authenticated" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("name email role");
+    if (!user) return res.status(401).json({ msg: "User not found" });
+    req.user = user;
+    next();
+  } catch {
+    return res.status(401).json({ msg: "Invalid token" });
+  }
+};
+

@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../axiosInstance";
 import toast, { Toaster } from "react-hot-toast";
 
 const CommentSection = () => {
@@ -25,32 +25,32 @@ const CommentSection = () => {
     fetchComments();
   }, [campaignId]);
 
- const handleAddComment = async (e) => {
-  e.preventDefault();
+  const handleAddComment = async (e) => {
+    e.preventDefault();
 
-  if (!newComment.trim()) return;
+    if (!newComment.trim()) return;
 
-  try {
-    await axios.post(
-      `http://localhost:5000/api/comments`,
-      { campaignId, content: newComment },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    try {
+      await axios.post(
+        `http://localhost:5000/api/comments`,
+        { campaignId, content: newComment },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setNewComment("");
+      fetchComments(); // Refresh comments after successful post
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.error("You must be logged in to comment.");
+      } else {
+        toast.error("Failed to add comment.");
       }
-    );
-    setNewComment("");
-    fetchComments(); // Refresh comments after successful post
-  } catch (err) {
-    if (err.response?.status === 401) {
-      toast.error("You must be logged in to comment.");
-    } else {
-      toast.error("Failed to add comment.");
+      console.error("Failed to add comment", err);
     }
-    console.error("Failed to add comment", err);
-  }
-};
+  };
 
   const handleDeleteComment = async (commentId) => {
     try {

@@ -14,6 +14,7 @@ export const getComments = async (req, res) => {
 
 // POST /api/comments
 export const createComment = async (req, res) => {
+  console.log("createComment req.user:", req.user);
   try {
     const { campaignId, content } = req.body;
     if (!content) return res.status(400).json({ msg: "Content is required" });

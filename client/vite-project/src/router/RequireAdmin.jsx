@@ -1,8 +1,11 @@
 import { useSelector } from "react-redux";
-import { Navigate } from "react-router"; // react-router provides Navigate too
+import { Navigate } from "react-router";
 
 const RequireAdmin = ({ children }) => {
-  const { user } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
+
+  // Optionally, add a loading state if you fetch auth async
+  if (user === undefined) return null; // Or a spinner
 
   if (!user || user.role !== "admin") {
     return <Navigate to="/" replace />;
