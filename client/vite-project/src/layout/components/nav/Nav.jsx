@@ -7,11 +7,14 @@ import { categories } from "../../../../../../shared/categories";
 import logo from "../../../assets/logo.png"; // Replace with your logo path
 import CreatedCampaignsMenuList from "../../../components/CreatedCampaignsMenuList";
 
+import { useSocket } from "../../../SocketContext";
+
 // Set your API base URL here or use an environment variable
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const Nav = () => {
+  const socket = useSocket();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { createdCampaigns = [] } = user || {};
@@ -21,6 +24,12 @@ const Nav = () => {
   const menuRef = useRef(null);
 
   const handleLogout = () => {
+    if (socket && user?._id) {
+      console.log("Emitting userLogout for", user._id);
+      socket.emit("userLogout", String(user._id));
+    } else {
+      console.log("No socket or user id");
+    }
     dispatch(logoutUser());
     navigate("/");
   };

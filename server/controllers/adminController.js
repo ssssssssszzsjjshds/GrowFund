@@ -11,10 +11,53 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+// Ban a user
+export const banUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { isBanned: true },
+      { new: true }
+    ).select("-password");
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    res.json({ msg: "User banned", user });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to ban user" });
+  }
+};
+
+// Unban a user
+export const unbanUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { isBanned: false },
+      { new: true }
+    ).select("-password");
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    res.json({ msg: "User unbanned", user });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to unban user" });
+  }
+};
+
+// Delete a user
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    res.json({ msg: "User deleted" });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to delete user" });
+  }
+};
+
 // GET all non-pending campaigns
 export const getAllNonPendingCampaigns = async (req, res) => {
   try {
-    const campaigns = await Campaign.find({ status: { $ne: "pending" } }).sort({ createdAt: -1 });
+    const campaigns = await Campaign.find({ status: { $ne: "pending" } }).sort({
+      createdAt: -1,
+    });
     res.json(campaigns);
   } catch (err) {
     res.status(500).json({ msg: err.message });
@@ -24,7 +67,9 @@ export const getAllNonPendingCampaigns = async (req, res) => {
 // GET all pending campaigns for review
 export const getPendingCampaigns = async (req, res) => {
   try {
-    const campaigns = await Campaign.find({ status: "pending" }).sort({ createdAt: -1 });
+    const campaigns = await Campaign.find({ status: "pending" }).sort({
+      createdAt: -1,
+    });
     res.json(campaigns);
   } catch (err) {
     res.status(500).json({ msg: err.message });

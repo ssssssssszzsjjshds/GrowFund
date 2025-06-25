@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
     linkedin: { type: String, default: "" },
     portfolio: { type: String, default: "" },
     emailVerified: { type: Boolean, default: false },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
     savedCampaigns: [
       {
         type: mongoose.Schema.Types.ObjectId,

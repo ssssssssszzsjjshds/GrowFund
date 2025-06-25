@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import AdminPanelNavbar from "../../admin/AdminPanelNavbar";
+
 
 const AdminReview = () => {
   const { id } = useParams();
@@ -66,6 +68,7 @@ const AdminReview = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-4">
+      <AdminPanelNavbar/>
       <img
         src={
           campaign.image

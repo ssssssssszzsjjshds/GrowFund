@@ -94,18 +94,82 @@ const io = new Server(server, {
 const onlineUsers = new Map(); // userId -> socket.id
 const typingUsers = new Map(); // roomId (conversation) -> Set of userIds
 
+// // Utility: consistent room id for 1-to-1 chat (alphabetical order)
+// function getRoomId(userId1, userId2) {
+//   return [userId1, userId2].sort().join("-");
+// }
+
+// io.on("connection", (socket) => {
+//   // User comes online
+//   socket.on("join", (userId) => {
+//     socket.userId = userId;
+//     onlineUsers.set(userId, socket.id);
+//     socket.join(userId); // Personal room for notifications
+//     io.emit("onlineUsers", Array.from(onlineUsers.keys())); // broadcast new online list
+//   });
+
+//   // Join a conversation room for 1-on-1 chat
+//   socket.on("joinConversation", (roomId) => {
+//     socket.join(roomId);
+//   });
+
+//   // Typing indicator
+//   socket.on("typing", ({ roomId, userId }) => {
+//     if (!typingUsers.has(roomId)) typingUsers.set(roomId, new Set());
+//     typingUsers.get(roomId).add(userId);
+//     socket.to(roomId).emit("userTyping", { roomId, userId, typing: true });
+//   });
+
+//   socket.on("stopTyping", ({ roomId, userId }) => {
+//     if (typingUsers.has(roomId)) typingUsers.get(roomId).delete(userId);
+//     socket.to(roomId).emit("userTyping", { roomId, userId, typing: false });
+//   });
+
+//   // Send message (to conversation room)
+//   socket.on("sendMessage", ({ roomId, message }) => {
+//     io.to(roomId).emit("receiveMessage", message);
+//   });
+
+//   // Read receipts
+//   socket.on("messageRead", ({ roomId, userId, messageId }) => {
+//     // Notify all users in the room except the reader
+//     socket.to(roomId).emit("messageRead", { roomId, userId, messageId });
+//   });
+
+//   // User disconnects
+//   socket.on("disconnect", () => {
+//     if (socket.userId) {
+//       onlineUsers.delete(socket.userId);
+//       io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+//     }
+//     // Optionally, clean up typingUsers for this socket if needed
+//   });
+// });
+
 // Utility: consistent room id for 1-to-1 chat (alphabetical order)
 function getRoomId(userId1, userId2) {
   return [userId1, userId2].sort().join("-");
 }
 
+// For multi-tab/device: track multiple sockets per user
+
 io.on("connection", (socket) => {
   // User comes online
   socket.on("join", (userId) => {
     socket.userId = userId;
-    onlineUsers.set(userId, socket.id);
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+    }
+    onlineUsers.get(userId).add(socket.id);
     socket.join(userId); // Personal room for notifications
-    io.emit("onlineUsers", Array.from(onlineUsers.keys())); // broadcast new online list
+
+    // Emit current online user list to all clients
+    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+  });
+
+  // Provide current online users list to client on demand
+  socket.on("getOnlineUsers", () => {
+    socket.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 
   // Join a conversation room for 1-on-1 chat
@@ -136,16 +200,32 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("messageRead", { roomId, userId, messageId });
   });
 
+  // Handle userLogout event -- PLACE IT HERE
+  socket.on("userLogout", (userId) => {
+    if (onlineUsers.has(userId)) {
+      const sockets = onlineUsers.get(userId);
+      sockets.delete(socket.id);
+      if (sockets.size === 0) {
+        onlineUsers.delete(userId);
+      }
+    }
+    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+  });
+
   // User disconnects
   socket.on("disconnect", () => {
-    if (socket.userId) {
-      onlineUsers.delete(socket.userId);
+    const userId = socket.userId;
+    if (userId && onlineUsers.has(userId)) {
+      const sockets = onlineUsers.get(userId);
+      sockets.delete(socket.id);
+      if (sockets.size === 0) {
+        onlineUsers.delete(userId);
+      }
       io.emit("onlineUsers", Array.from(onlineUsers.keys()));
     }
     // Optionally, clean up typingUsers for this socket if needed
   });
 });
-
 server.listen(5000, () =>
   console.log("Server is running on port 5000 (with sockets)")
 );

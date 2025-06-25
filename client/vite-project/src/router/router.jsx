@@ -24,6 +24,7 @@ import UserProfileSettings from "../pages/userProfileSettings/UserProfileSetting
 import ResetPassword from "../pages/resetPassword/ResetPassword";
 import ActivityPage from "../pages/activity/ActivityPage";
 import UserProfilePage from "../pages/userProfilePage/UserProfilePage";
+import ReviewUsers from "../admin/ReviewUsers";
 
 const router = createBrowserRouter([
   {
@@ -35,44 +36,23 @@ const router = createBrowserRouter([
       { path: "register", element: <Register /> },
       { path: "create-campaign", element: <CreateCampaign /> },
       { path: "campaigns/:id", element: <CampaignDetail /> },
+      { path: "explore", element: <Explore /> },
+      { path: "my-campaigns", element: <MyCampaigns /> },
+      { path: "campaigns/:id/edit", element: <CampaignEdit /> },
+      { path: "saved-campaigns", element: <SavedCampaigns /> },
+      { path: "mock-payment", element: <MockPaymentPage /> },
+      { path: "activity", element: <ActivityPage /> },
+      { path: "messages", element: <MessagesPage /> },
+      { path: "profile/:id", element: <UserProfilePage /> },
       {
-        path: "explore",
-        element: <Explore />,
-      },
-      {
-        path: "my-campaigns",
-        element: <MyCampaigns />,
-      },
-      {
-        path: "campaigns/:id/edit",
-        element: <CampaignEdit />,
-      },
-      {
-        path: "/saved-campaigns",
-        element: <SavedCampaigns />,
-      },
-      {
-        path: "/mock-payment",
-        element: <MockPaymentPage />,
-      },
-      {
-        path: "/activity",
-        element: <ActivityPage />,
-      },
-      { path: "/messages", element: <MessagesPage /> },
-      { path: "/profile/:id", element: <UserProfilePage /> },
-      {
-        path: "/settings/profile",
+        path: "settings/profile",
         element: (
           <PrivateRoute>
             <UserProfileSettings />
           </PrivateRoute>
         ),
       },
-      {
-        path: "/reset-password/:token",
-        element: <ResetPassword />,
-      },
+      { path: "reset-password/:token", element: <ResetPassword /> },
     ],
   },
   {
@@ -84,7 +64,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "admin/campaigns/:id",
+    path: "/admin/campaigns/:id",
     element: (
       <RequireAdmin>
         <AdminCampaignDetail />
@@ -92,10 +72,18 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/admin/users",
+    element: (
+      <RequireAdmin>
+        <ReviewUsers />
+      </RequireAdmin>
+    ),
+  },
+  {
     path: "/admin/review",
     element: (
       <RequireAdmin>
-        <ReviewCampaigns />,
+        <ReviewCampaigns />
       </RequireAdmin>
     ),
   },

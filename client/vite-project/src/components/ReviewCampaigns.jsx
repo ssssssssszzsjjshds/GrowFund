@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "../axiosInstance"; // Use your axios instance with withCredentials: true
 import AdminCampaignCard from "./AdminCampaignCard";
+import AdminPanelNavbar from "../admin/AdminPanelNavbar";
 
 const ReviewCampaigns = () => {
   const [pending, setPending] = useState([]);
@@ -19,11 +20,12 @@ const ReviewCampaigns = () => {
   }, []);
 
   if (pending.length === 0) {
-    return <p className="text-center text-gray-500">No pending campaigns.</p>;
-  }
+    return <div className=""><AdminPanelNavbar/><p className="text-center text-gray-500">No pending campaigns.</p>;
+ </div>; }
 
   return (
     <div className="p-4">
+      <AdminPanelNavbar/>
       <h1 className="text-2xl font-bold mb-4">Pending Campaigns</h1>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {pending.map((c) => (
