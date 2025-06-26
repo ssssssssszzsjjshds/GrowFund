@@ -62,7 +62,8 @@ const messagesSlice = createSlice({
       .addCase(fetchMessages.pending, (state) => {
         state.loading = true;
         state.error = null;
-        state.messages = [];
+        // DO NOT clear messages here: keep previous messages until new ones arrive
+        // state.messages = []; <-- removed for better UX
       })
       .addCase(fetchMessages.fulfilled, (state, action) => {
         state.loading = false;
@@ -72,7 +73,7 @@ const messagesSlice = createSlice({
       .addCase(fetchMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch messages";
-        state.messages = [];
+        // Optionally: state.messages = [];
       })
       // Send message
       .addCase(sendMessage.pending, (state) => {
@@ -82,7 +83,7 @@ const messagesSlice = createSlice({
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.sending = false;
         state.sendError = null;
-        // Optionally, push the new message to the messages array
+        // Push the new message to the messages array optimistically
         state.messages.push(action.payload);
       })
       .addCase(sendMessage.rejected, (state, action) => {

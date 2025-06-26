@@ -9,8 +9,13 @@ import {
 } from "../../redux/slices/messageSlice";
 import axios from "../../axiosInstance";
 import { io } from "socket.io-client";
+import { useLocation } from "react-router";
+import { useNavigate } from "react-router";
 
-const SOCKET_URL = "http://localhost:5000"; // or use your env/client url
+const SOCKET_URL = "http://localhost:5000";
+
+// Utility to normalize user/conversation IDs
+const getUserId = (user) => user?._id || user?.userId || user?.id;
 
 const MessagesPage = () => {
   const dispatch = useDispatch();
@@ -20,10 +25,12 @@ const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [convError, setConvError] = useState(null);
-
   // Socket and online users
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Fetch the list of users you have conversations with
   const fetchConversations = useCallback(async () => {
@@ -52,28 +59,60 @@ const MessagesPage = () => {
   // --- Socket.IO connection and event listeners ---
   useEffect(() => {
     if (!currentUser) return;
-    // connect only once
     const s = io(SOCKET_URL, { withCredentials: true });
     setSocket(s);
 
     s.emit("join", currentUser._id);
 
-    // Listen for list of online users
     s.on("onlineUsers", (users) => {
       setOnlineUsers(users);
+    });
+
+    // Listen for new messages from other users
+    s.on("receiveMessage", (msg) => {
+      // If the sender is NOT in our conversations, or for new conversations, refetch
+      // (This will also work for updates)
+      fetchConversations();
     });
 
     return () => {
       s.disconnect();
     };
-  }, [currentUser]);
+  }, [currentUser, fetchConversations]);
 
   // When a conversation/user is selected from the sidebar
   const handleSelectConversation = (user) => {
     if (!user) return;
     dispatch(setCurrentConversation(user));
-    dispatch(fetchMessages(user._id));
+    dispatch(fetchMessages(getUserId(user)));
   };
+
+  // Auto select user if passed from navigation state (e.g., from profile "Message" button)
+  const [hasHandledProfileUser, setHasHandledProfileUser] = useState(false);
+
+  useEffect(() => {
+    if (
+      !hasHandledProfileUser &&
+      location.state?.userToMessage &&
+      conversations.length > 0 &&
+      currentUser
+    ) {
+      const navId = getUserId(location.state.userToMessage);
+      const existingConv = conversations.find((c) => getUserId(c) === navId);
+      if (existingConv) {
+        handleSelectConversation(existingConv);
+      } else {
+        handleSelectConversation(location.state.userToMessage);
+      }
+      setHasHandledProfileUser(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [
+    location.state?.userToMessage,
+    conversations.length,
+    currentUser,
+    hasHandledProfileUser,
+  ]);
 
   if (!currentUser) {
     return (

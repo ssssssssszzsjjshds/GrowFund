@@ -16,39 +16,37 @@ const ChatWindow = ({
   const messagesEndRef = useRef(null);
 
   // Typing indicator state
-  const [isTyping, setIsTyping] = useState(false); // is other user typing?
-  const [showRead, setShowRead] = useState({}); // messageId: true
+  const [isTyping, setIsTyping] = useState(false);
+  const [showRead, setShowRead] = useState({});
 
-  // For debouncing typing events
   const typingTimeoutRef = useRef(null);
   const [hasAnnouncedTyping, setHasAnnouncedTyping] = useState(false);
 
-  // Room id for this conversation (can just use both user IDs sorted/joined)
+  // Use _id or userId for the receiver, fallback logic
+  const receiverId = conversationUser?._id || conversationUser?.userId;
+
   const getRoomId = () => {
-    return [currentUser._id, conversationUser._id].sort().join("-");
+    return [currentUser._id, receiverId].sort().join("-");
   };
   const roomId = getRoomId();
 
-  // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch messages on conversation change
   useEffect(() => {
     if (conversationUser && currentUser) {
-      dispatch(fetchMessages(conversationUser._id));
+      dispatch(fetchMessages(receiverId));
     }
-  }, [conversationUser, currentUser, dispatch]);
+  }, [conversationUser, currentUser, dispatch, receiverId]);
 
-  // --- SOCKET.IO: Join room and set up listeners ---
   useEffect(() => {
     if (!socket || !currentUser || !conversationUser) return;
 
     socket.emit("joinConversation", roomId);
 
     const handleUserTyping = ({ roomId: incomingRoomId, userId, typing }) => {
-      if (incomingRoomId === roomId && userId === conversationUser._id) {
+      if (incomingRoomId === roomId && userId === receiverId) {
         setIsTyping(typing);
       }
     };
@@ -59,22 +57,18 @@ const ChatWindow = ({
       userId,
       messageId,
     }) => {
-      if (incomingRoomId === roomId && userId === conversationUser._id) {
+      if (incomingRoomId === roomId && userId === receiverId) {
         setShowRead((sr) => ({ ...sr, [messageId]: true }));
       }
     };
     socket.on("messageRead", handleMessageRead);
 
-    // --- NEW: Listen for incoming messages in real time ---
     const handleReceiveMessage = (msg) => {
-      // Only refetch if the message is for this conversation
       if (
-        (msg.sender === conversationUser._id &&
-          msg.receiver === currentUser._id) ||
-        (msg.sender === currentUser._id &&
-          msg.receiver === conversationUser._id)
+        (msg.sender === receiverId && msg.receiver === currentUser._id) ||
+        (msg.sender === currentUser._id && msg.receiver === receiverId)
       ) {
-        dispatch(fetchMessages(conversationUser._id));
+        dispatch(fetchMessages(receiverId));
       }
     };
     socket.on("receiveMessage", handleReceiveMessage);
@@ -84,9 +78,27 @@ const ChatWindow = ({
       socket.off("messageRead", handleMessageRead);
       socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, [socket, roomId, conversationUser?._id, currentUser?._id, dispatch]);
+  }, [
+    socket,
+    roomId,
+    receiverId,
+    currentUser?._id,
+    dispatch,
+    conversationUser,
+  ]);
 
-  // --- TYPING INDICATOR: Emit events on input ---
+  useEffect(() => {
+    if (!socket || !messages || !messages.length) return;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg && lastMsg.sender === receiverId) {
+      socket.emit("messageRead", {
+        roomId,
+        userId: currentUser._id,
+        messageId: lastMsg._id,
+      });
+    }
+  }, [socket, messages, receiverId, currentUser?._id, roomId]);
+
   useEffect(() => {
     if (!socket || !conversationUser || !currentUser) return;
 
@@ -113,46 +125,39 @@ const ChatWindow = ({
     input,
     socket,
     roomId,
-    conversationUser?._id,
+    receiverId,
     currentUser?._id,
     hasAnnouncedTyping,
+    conversationUser,
   ]);
-
-  // --- READ RECEIPTS: Notify when user sees last message ---
-  useEffect(() => {
-    if (!socket || !messages || !messages.length) return;
-    const lastMsg = messages[messages.length - 1];
-    if (lastMsg && lastMsg.sender === conversationUser._id) {
-      socket.emit("messageRead", {
-        roomId,
-        userId: currentUser._id,
-        messageId: lastMsg._id,
-      });
-    }
-  }, [socket, messages, conversationUser?._id, currentUser?._id, roomId]);
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    // Debug log to help catch any undefined value
+    console.log("Sending to receiver:", receiverId, "Content:", input.trim());
+
+    if (!receiverId) {
+      alert("No recipient selected. Please try again.");
+      return;
+    }
+
     try {
       const result = await dispatch(
         sendMessage({
-          receiver: conversationUser._id,
+          receiver: receiverId,
           content: input.trim(),
         })
       ).unwrap();
       setInput("");
       if (onNewMessageSent) onNewMessageSent();
 
-      // Emit the message over socket for instant delivery,
-      // using message _id assigned by backend for consistency
       if (socket) {
         socket.emit("sendMessage", {
-          // Use roomId for delivery
           roomId,
           message: {
-            ...result, // contains _id, sender, receiver, content, createdAt, etc.
+            ...result,
           },
         });
       }
@@ -215,18 +220,33 @@ const ChatWindow = ({
           overflowY: "auto",
           padding: "1rem",
           background: "#f7f7fa",
+          position: "relative",
         }}
       >
-        {loading ? (
-          <div style={{ color: "#888", textAlign: "center" }}>Loading...</div>
-        ) : messages.length === 0 ? (
+        {/* Subtle loading indicator in the corner if loading and messages already exist */}
+        {loading && messages.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 20,
+              color: "#888",
+              fontSize: 14,
+              zIndex: 1,
+            }}
+          >
+            Updating...
+          </div>
+        )}
+
+        {/* Only show full loading if no messages */}
+        {!loading && messages.length === 0 ? (
           <div style={{ color: "#888", textAlign: "center" }}>
             No messages yet. Say hello!
           </div>
         ) : (
           messages.map((msg) => {
             const isOwn = msg.sender === currentUser._id;
-            // Read receipt: only for own last message
             const isLastOwn =
               isOwn && messages[messages.length - 1]._id === msg._id;
             return (
@@ -263,7 +283,6 @@ const ChatWindow = ({
                       minute: "2-digit",
                     })}
                   </div>
-                  {/* Read receipt */}
                   {isLastOwn && showRead[msg._id] && (
                     <div
                       style={{
@@ -305,7 +324,7 @@ const ChatWindow = ({
           onChange={(e) => setInput(e.target.value)}
           type="text"
           placeholder="Type your message…"
-          disabled={sending}
+          disabled={sending || !receiverId}
           style={{
             flex: 1,
             border: "1px solid #ddd",
@@ -317,7 +336,7 @@ const ChatWindow = ({
         />
         <button
           type="submit"
-          disabled={sending || !input.trim()}
+          disabled={sending || !input.trim() || !receiverId}
           style={{
             marginLeft: 8,
             padding: "0.5rem 1.25rem",
@@ -327,7 +346,10 @@ const ChatWindow = ({
             color: "#fff",
             fontWeight: 500,
             fontSize: 16,
-            cursor: sending || !input.trim() ? "not-allowed" : "pointer",
+            cursor:
+              sending || !input.trim() || !receiverId
+                ? "not-allowed"
+                : "pointer",
           }}
         >
           {sending ? "…" : "Send"}
@@ -335,6 +357,11 @@ const ChatWindow = ({
       </form>
       {sendError && (
         <div style={{ color: "red", padding: "0.5rem 1rem" }}>{sendError}</div>
+      )}
+      {!receiverId && (
+        <div style={{ color: "red", padding: "0.5rem 1rem" }}>
+          No recipient selected. Please try again.
+        </div>
       )}
     </div>
   );

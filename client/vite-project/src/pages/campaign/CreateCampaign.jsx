@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import axios from "../../axiosInstance.js";
 import { useNavigate } from "react-router";
 import { categories } from "../../../../../shared/categories.js";
+import { useSelector } from "react-redux";
 
 const emptyTextBlock = { type: "text", content: "", order: 0 };
 const emptyImageBlock = { type: "image", content: "", order: 0 };
@@ -11,34 +12,48 @@ const emptyImageBlock = { type: "image", content: "", order: 0 };
 const CreateCampaign = () => {
   const navigate = useNavigate();
   const [blocks, setBlocks] = useState([]);
+  const user = useSelector((state) => state.auth.user);
+
+  // Conditional rendering if user is banned
+  if (user?.isBanned) {
+    return (
+      <div className="max-w-lg mx-auto p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4 text-red-700">You are banned</h2>
+        <p className="mb-6 text-gray-600">
+          Your account has been banned. You cannot create new campaigns. You are
+          still able to view existing campaigns and fund them.
+        </p>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={() => navigate("/")}
+        >
+          Back to Home
+        </button>
+      </div>
+    );
+  }
 
   // Add text block
   const addTextBlock = () => {
-    setBlocks([
-      ...blocks,
-      { ...emptyTextBlock, order: blocks.length },
-    ]);
+    setBlocks([...blocks, { ...emptyTextBlock, order: blocks.length }]);
   };
 
   // Add image block
   const addImageBlock = () => {
-    setBlocks([
-      ...blocks,
-      { ...emptyImageBlock, order: blocks.length },
-    ]);
+    setBlocks([...blocks, { ...emptyImageBlock, order: blocks.length }]);
   };
 
   // Remove block
   const removeBlock = (idx) => {
-    setBlocks(blocks.filter((_, i) => i !== idx).map((b, i) => ({ ...b, order: i })));
+    setBlocks(
+      blocks.filter((_, i) => i !== idx).map((b, i) => ({ ...b, order: i }))
+    );
   };
 
   // Update block content
   const updateBlockContent = (idx, content) => {
     setBlocks(
-      blocks.map((block, i) =>
-        i === idx ? { ...block, content } : block
-      )
+      blocks.map((block, i) => (i === idx ? { ...block, content } : block))
     );
   };
 
@@ -116,7 +131,11 @@ const CreateCampaign = () => {
               placeholder="Title"
               className="w-full p-2 border rounded"
             />
-            <ErrorMessage name="title" component="div" className="text-red-500" />
+            <ErrorMessage
+              name="title"
+              component="div"
+              className="text-red-500"
+            />
 
             {/* Description */}
             <Field
@@ -125,7 +144,11 @@ const CreateCampaign = () => {
               placeholder="Description"
               className="w-full p-2 border rounded"
             />
-            <ErrorMessage name="description" component="div" className="text-red-500" />
+            <ErrorMessage
+              name="description"
+              component="div"
+              className="text-red-500"
+            />
 
             {/* Campaign Icon */}
             <div>
@@ -173,7 +196,9 @@ const CreateCampaign = () => {
                         <textarea
                           className="w-full p-2 border rounded"
                           value={block.content}
-                          onChange={(e) => updateBlockContent(idx, e.target.value)}
+                          onChange={(e) =>
+                            updateBlockContent(idx, e.target.value)
+                          }
                           placeholder="Enter text..."
                           rows={3}
                         />
@@ -183,7 +208,8 @@ const CreateCampaign = () => {
                             type="file"
                             accept="image/*"
                             onChange={(e) =>
-                              e.target.files[0] && handleImageInput(idx, e.target.files[0])
+                              e.target.files[0] &&
+                              handleImageInput(idx, e.target.files[0])
                             }
                           />
                           {block.content && (
@@ -208,7 +234,11 @@ const CreateCampaign = () => {
               placeholder="Goal Amount (AZN)"
               className="w-full p-2 border rounded"
             />
-            <ErrorMessage name="goal" component="div" className="text-red-500" />
+            <ErrorMessage
+              name="goal"
+              component="div"
+              className="text-red-500"
+            />
 
             {/* Deadline */}
             <Field
@@ -216,7 +246,11 @@ const CreateCampaign = () => {
               name="deadline"
               className="w-full p-2 border rounded"
             />
-            <ErrorMessage name="deadline" component="div" className="text-red-500" />
+            <ErrorMessage
+              name="deadline"
+              component="div"
+              className="text-red-500"
+            />
 
             {/* Category */}
             <Field
@@ -231,7 +265,11 @@ const CreateCampaign = () => {
                 </option>
               ))}
             </Field>
-            <ErrorMessage name="category" component="div" className="text-red-500" />
+            <ErrorMessage
+              name="category"
+              component="div"
+              className="text-red-500"
+            />
 
             <button
               type="submit"

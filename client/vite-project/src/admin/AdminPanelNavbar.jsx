@@ -11,9 +11,13 @@ const AdminPanelNavbar = () => {
 
   return (
     <nav className="w-full border-b border-gray-200 bg-white flex items-center justify-between px-6 py-3 mb-6 shadow-sm">
-      <div className="text-xl font-bold text-blue-700 tracking-wide">
+      <div className="text-xl font-bold text-blue-700 tracking-wide flex gap-3">
         <Link to="/admin">Admin Panel</Link>
+        <br />
+
+        <Link to="/">Home</Link>
       </div>
+
       <div className="flex gap-3">
         <Link to="/admin/users" className={navLinkClass("/admin/users")}>
           View Users

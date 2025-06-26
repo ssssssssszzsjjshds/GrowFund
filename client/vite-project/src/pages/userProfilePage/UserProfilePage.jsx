@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../axiosInstance";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { FaInstagram, FaFacebook, FaLinkedin, FaGlobe } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 export default function UserProfilePage() {
-  const { id } = useParams(); // <-- get user id from URL
+  const { id } = useParams(); // get user id from URL
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const currentUser = useSelector((state) => state.auth.user); // logged-in user
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
@@ -50,8 +53,21 @@ export default function UserProfilePage() {
       color: "text-green-700",
     },
   ];
-  console.log("createdAt:", profile?.createdAt);
-  console.log("date check:", new Date(profile?.createdAt));
+
+  // Handler for "Message" button
+  const handleMessage = () => {
+    console.log("Navigating to messages with:", profile);
+    navigate("/messages", {
+      state: {
+        userToMessage: {
+          _id: profile._id,
+          name: profile.name,
+          avatar: profile.avatar,
+        },
+      },
+    });
+  };
+
   return (
     <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
       <h1 className="text-3xl font-bold mb-6 text-[#635bff] text-center">
@@ -71,7 +87,7 @@ export default function UserProfilePage() {
               : "Unknown"}
           </div>
           {/* Social Links */}
-          <div className="flex gap-4 justify-center mb-8">
+          <div className="flex gap-4 justify-center mb-4">
             {socials.map(
               (s, idx) =>
                 s.url &&
@@ -89,6 +105,18 @@ export default function UserProfilePage() {
                 )
             )}
           </div>
+
+          {/* Message Button */}
+          {currentUser && profile._id !== currentUser._id && (
+            <div className="flex justify-center mb-8">
+              <button
+                className="bg-[#635bff] hover:bg-[#5146ff] text-white font-semibold px-6 py-2 rounded shadow transition"
+                onClick={handleMessage}
+              >
+                Message
+              </button>
+            </div>
+          )}
 
           {/* Created Projects */}
           <div>
