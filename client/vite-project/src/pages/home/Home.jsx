@@ -26,7 +26,7 @@ const Home = () => {
       <h1 className="text-3xl font-bold mb-6">Active Campaigns</h1>
 
       <CampaignList />
-      <NewestCampaigns count={3} />
+      <NewestCampaigns count={6} />
     </div>
   );
 };

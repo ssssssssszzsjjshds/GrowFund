@@ -78,8 +78,8 @@ app.use("/api/auth", AuthRouter);
 app.use("/api/balance", balanceRouters);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/user", userRoute);
-app.use("/api/user", userActivityRouter);
+app.use("/api/user", userActivityRouter); // <-- FIRST
+app.use("/api/user", userRoute); // <-- SECOND (/:id)
 app.use("/api/user", profilePic);
 // ----------- SOCKET.IO SETUP -----------
 const server = http.createServer(app);

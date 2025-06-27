@@ -5,7 +5,7 @@
     overflow: visible;
 
     transition: box-shadow 0.2s, border 0.2s;
-    
+    z-index: 1;
     width: 340px;
     position: relative;
     outline: none;
@@ -16,6 +16,8 @@
 .card:focus-within {
     box-shadow: 0 4px 24px rgba(30, 185, 130, 0.14);
     scale: 1.02;
+    z-index: 100;
+    transition: 0.3 ease-in-out !important;
    
     
 }

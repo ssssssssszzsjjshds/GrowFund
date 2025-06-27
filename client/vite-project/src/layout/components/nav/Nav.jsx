@@ -256,7 +256,7 @@ const Nav = () => {
           {categories.map((cat) => (
             <Link
               key={cat}
-              to={`/?category=${encodeURIComponent(cat)}`}
+              to={`/category/${encodeURIComponent(cat)}`}
               className="text-xs underline hover:text-yellow-500 "
             >
               {cat}

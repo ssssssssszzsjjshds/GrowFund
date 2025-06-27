@@ -66,11 +66,17 @@ const CreateCampaign = () => {
     reader.readAsDataURL(file);
   };
 
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const formattedToday = `${yyyy}-${mm}-${dd}`;
+
   const initialValues = {
     title: "",
     description: "",
     goal: "",
-    deadline: "",
+    deadline: formattedToday, // Set to current date
     category: "",
     image: null,
   };
@@ -79,9 +85,14 @@ const CreateCampaign = () => {
     title: Yup.string().required("Title is required"),
     description: Yup.string().required("Description is required"),
     goal: Yup.number()
-      .min(1, "Goal must be at least 1")
+      .min(100, "Goal must be at least 100")
       .required("Goal is required"),
-    deadline: Yup.date().required("Deadline is required"),
+    deadline: Yup.date()
+      .required("Deadline is required")
+      .min(
+        new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
+        "Deadline must be at least 31 days from today"
+      ),
     category: Yup.string()
       .oneOf(categories, "Invalid category")
       .required("Category is required"),
@@ -245,6 +256,11 @@ const CreateCampaign = () => {
               type="date"
               name="deadline"
               className="w-full p-2 border rounded"
+              min={(() => {
+                const minDate = new Date();
+                minDate.setDate(minDate.getDate() + 31);
+                return minDate.toISOString().split("T")[0];
+              })()}
             />
             <ErrorMessage
               name="deadline"

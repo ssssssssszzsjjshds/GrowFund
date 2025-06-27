@@ -79,7 +79,6 @@ const CampaignCard = ({ campaign, onSave, onUnsave, isSaved }) => {
           }
           alt={campaign.title}
           className={styles.campaignImg}
-          
         />
         {/* Progress Bar */}
         <div className={styles.progressBarContainer}>
@@ -173,7 +172,21 @@ const CampaignCard = ({ campaign, onSave, onUnsave, isSaved }) => {
           <div className={styles.hoverDescription}>
             {truncate(campaign.description, 30)}
           </div>
-          <div className={styles.hoverCategory}>{campaign.category}</div>
+          <div
+            className={styles.hoverCategory}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/category/${encodeURIComponent(campaign.category)}`);
+            }}
+            style={{
+              cursor: "pointer",
+              textDecoration: "none",
+              color: "#179b6b",
+            }}
+            title={`See all campaigns in ${campaign.category}`}
+          >
+            {campaign.category}
+          </div>
           {/* Show campaign location if available */}
           {campaign.location && (
             <div className={styles.hoverLocation}>{campaign.location}</div>

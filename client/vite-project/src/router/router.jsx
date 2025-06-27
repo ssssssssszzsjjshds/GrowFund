@@ -25,6 +25,7 @@ import ResetPassword from "../pages/resetPassword/ResetPassword";
 import ActivityPage from "../pages/activity/ActivityPage";
 import UserProfilePage from "../pages/userProfilePage/UserProfilePage";
 import ReviewUsers from "../admin/ReviewUsers";
+import CategoryPage from "../pages/categoryPage/CategoryPage";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
       { path: "activity", element: <ActivityPage /> },
       { path: "messages", element: <MessagesPage /> },
       { path: "profile/:id", element: <UserProfilePage /> },
+      {path: "/category/:category", element: <CategoryPage />},
       {
         path: "settings/profile",
         element: (
