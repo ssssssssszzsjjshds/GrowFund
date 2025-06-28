@@ -1,0 +1,243 @@
+.card {
+    background: #fff;
+    border-radius: 1.2rem 1.2rem 0px 0px;
+    transition: 0.3s ease-in-out !important;
+    overflow: visible;
+    transition: box-shadow 0.2s, border 0.2s;
+    z-index: 1;
+    width: 38vw;
+    min-width: 340px;
+    max-width: 600px;
+    position: relative;
+    outline: none;
+    margin: 0 auto 28px auto;
+    box-shadow: 0 4px 20px rgba(30, 185, 130, 0.10);
+}
+
+.card:focus-within {
+    box-shadow: 0 4px 24px rgba(30, 185, 130, 0.14);
+    scale: 1.02;
+    z-index: 100;
+    transition: 0.3s ease-in-out !important;
+}
+
+.imageWrapper {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+    border-radius: 1.2rem;
+    background: #f6f6f6;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    cursor: pointer;
+}
+
+.campaignImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 1.2rem 1.2rem 0 0;
+    display: block;
+}
+
+.progressBarContainer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 10px;
+    background: #e5e5e5;
+    border-radius: 0 0 1.2rem 1.2rem;
+    overflow: hidden;
+    z-index: 3;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: linear-gradient(90deg, #1abc60 60%, #0b9e43 100%);
+    transition: width 0.3s;
+}
+
+.saveBtn {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    background: #fff;
+    border: none;
+    outline: none;
+    border-radius: 50%;
+    padding: 0.55em;
+    box-shadow: 0 2px 8px rgba(30, 185, 130, 0.09);
+    transition: background 0.15s;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.saveBtn:hover {
+    background: #eafff4;
+}
+
+.saved svg {
+    filter: drop-shadow(0 0 3px #55f7aa);
+}
+
+.content {
+    padding: 26px 22px 18px 22px;
+    position: relative;
+    min-height: 120px;
+    z-index: 2;
+}
+
+.creatorNProfile {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.creatorImg {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2.5px solid #1abc60;
+    background: #f7fafc;
+    flex-shrink: 0;
+    transition: box-shadow 0.15s;
+}
+
+.creatorImg:hover {
+    box-shadow: 0 2px 12px rgba(30, 185, 130, 0.13);
+}
+
+.creatorPlaceholder {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e2e8f0;
+    color: #2b2b2b;
+    font-weight: 700;
+    font-size: 1.33rem;
+    cursor: pointer;
+    border: 2.5px solid #1abc60;
+    background-clip: padding-box;
+    flex-shrink: 0;
+}
+
+.creatorInfo {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.campaignTitle {
+    font-size: 1.28rem;
+    font-weight: 700;
+    color: #262626;
+    margin-bottom: 3px;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.campaignTitle:hover {
+    text-decoration: underline;
+}
+
+.campaignSubtitle {
+    font-size: 1.03rem;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.campaignStats {
+    font-size: 1.01rem;
+    color: #4b575f;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.campaignStats svg {
+    vertical-align: middle;
+    margin-right: 2px;
+}
+
+.bigOverlay {
+    padding-top: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.bigDescription {
+    font-size: 1.08rem;
+    color: #2b2b2b;
+    margin-bottom: 16px;
+    max-height: 120px;
+    overflow: auto;
+    width: 100%;
+}
+
+.bigCategory {
+    background: #eef8f5;
+    color: #179b6b;
+    padding: 0.6em 1.5em;
+    border-radius: 1.7em;
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin-top: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.bigCategory:hover {
+    background: #d1f7e8;
+    color: #15875a;
+}
+
+.bigLocation {
+    margin-top: 13px;
+    padding: 0.52em 1.5em;
+    background: #f2f3fb;
+    border-radius: 1.7em;
+    font-size: 1.05rem;
+    color: #444;
+}
+
+@media (max-width: 950px) {
+    .card {
+        width: 95vw;
+        min-width: 0;
+        max-width: 99vw;
+        border-radius: 1rem;
+    }
+
+    .imageWrapper {
+        height: 160px;
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .campaignImg {
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .creatorImg,
+    .creatorPlaceholder {
+        width: 36px;
+        height: 36px;
+        font-size: 1.03rem;
+    }
+
+    .bigOverlay {
+        padding-top: 12px;
+    }
+}

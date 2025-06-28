@@ -3,6 +3,7 @@ import axios from "axios";
 import { useLocation } from "react-router";
 import FilterBar from "../../../../shared/FilterBar";
 import CampaignCard from "./CampaignCard"; // import the reusable card
+import CampaignCardBig from "./CampaignCardBig";
 
 const API_BASE = "http://localhost:5000";
 
@@ -81,14 +82,30 @@ const CampaignList = ({ category: categoryProp }) => {
         <p>No campaigns found.</p>
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {campaigns.map((c) => (
-            <CampaignCard
-              key={c._id}
-              campaign={c}
-              isSaved={savedCampaigns.includes(c._id)}
-              onSave={handleSave}
-              onUnsave={handleUnsave}
-            />
+          {/* Render the first campaign as a big card if available */}
+          {campaigns[0] && (
+            <li
+              key={campaigns[0]._id}
+              className="col-span-1 md:col-span-2 lg:col-span-3"
+            >
+              <CampaignCardBig
+                campaign={campaigns[0]}
+                isSaved={savedCampaigns.includes(campaigns[0]._id)}
+                onSave={handleSave}
+                onUnsave={handleUnsave}
+              />
+            </li>
+          )}
+          {/* Render the rest as normal cards */}
+          {campaigns.slice(1).map((c) => (
+            <li key={c._id}>
+              <CampaignCard
+                campaign={c}
+                isSaved={savedCampaigns.includes(c._id)}
+                onSave={handleSave}
+                onUnsave={handleUnsave}
+              />
+            </li>
           ))}
         </ul>
       )}

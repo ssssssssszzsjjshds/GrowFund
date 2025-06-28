@@ -26,3 +26,17 @@ export const validCategories = [
   "Publishing",
   "Community",
 ];
+
+export const categoryLabels = {
+  "Video Games": "Games We Love",
+  Charity: "Charity Worth Supporting",
+  Education: "Education for All",
+  Art: "Artistic Inspirations",
+  Technology: "Tech Innovations",
+  Health: "Health & Wellness Picks",
+  Music: "Music That Moves Us",
+  Environment: "Green Initiatives",
+  Film: "Films to Watch",
+  Publishing: "Books & Publishing",
+  Community: "Community Projects",
+};
