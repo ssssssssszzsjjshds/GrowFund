@@ -3,14 +3,13 @@ import axios from "axios";
 import { useLocation } from "react-router";
 import FilterBar from "../../../../shared/FilterBar";
 import CampaignCard from "./CampaignCard";
-import CampaignCardBig from "./CampaignCardBig";
 
 const API_BASE = "http://localhost:5000";
 
-const CampaignList = ({ category: categoryProp }) => {
+const CategoryCampaignsList = ({ category: categoryProp }) => {
   const [campaigns, setCampaigns] = useState([]);
   const [savedCampaigns, setSavedCampaigns] = useState([]);
-  const [filter, setFilter] = useState("most_viewed"); // default to most_viewed
+  const [filter, setFilter] = useState("most_viewed");
   const [selectedCategory, setSelectedCategory] = useState(categoryProp || "");
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -83,37 +82,25 @@ const CampaignList = ({ category: categoryProp }) => {
   };
 
   return (
-    <div className="p-4">
-      
+    <div>
+      {/* Remove extra flex, z-index, and height here */}
       {!isHomePage && (
+
+         <div className="flex items-center justify-between  p-10">
         <FilterBar
           selectedCategory={selectedCategory}
           setCategory={setSelectedCategory}
           filter={filter}
           setFilter={setFilter}
-        />
+        
+        /></div>
       )}
-     
+
       {campaigns.length === 0 ? (
         <p>No campaigns found.</p>
       ) : (
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Render the first campaign as a big card if available */}
-          {campaigns[0] && (
-            <li
-              key={campaigns[0]._id}
-              className="col-span-1 md:col-span-2 lg:col-span-3"
-            >
-              <CampaignCardBig
-                campaign={campaigns[0]}
-                isSaved={savedCampaigns.includes(campaigns[0]._id)}
-                onSave={handleSave}
-                onUnsave={handleUnsave}
-              />
-            </li>
-          )}
-          {/* Render the rest as normal cards */}
-          {campaigns.slice(1).map((c) => (
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+          {campaigns.map((c) => (
             <li key={c._id}>
               <CampaignCard
                 campaign={c}
@@ -129,4 +116,4 @@ const CampaignList = ({ category: categoryProp }) => {
   );
 };
 
-export default CampaignList;
+export default CategoryCampaignsList;

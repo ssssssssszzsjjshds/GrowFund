@@ -100,7 +100,7 @@ const CampaignCarousel = ({
       {/* Progress Bar Indicator with Dots */}
       <div className="w-full max-w-lg mx-auto mt-7 pb-2 relative">
         {/* Track */}
-        <div className="h-2 bg-gray-200 rounded-full relative select-none">
+        <div className="h-2 bg-gray-200 rounded-full relative select-none pointer-events-none">
           {/* Progress fill */}
           <div
             className="h-2 bg-blue-500 rounded-full transition-all absolute top-0 left-0"
@@ -115,24 +115,26 @@ const CampaignCarousel = ({
           />
           {/* Dots */}
           <div
-            className="absolute top-1/2 left-0 w-full flex justify-between items-center pointer-events-none"
+            className="absolute top-1/2 left-0 w-full flex justify-between items-center"
             style={{ transform: "translateY(-50%)" }}
+            // removed pointer-events-none here!
           >
             {slides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
-                className={`w-4 h-4 rounded-full border-2 shadow transition-all duration-200
-                  ${
-                    current === idx
-                      ? "bg-blue-500 border-blue-700 scale-125"
-                      : "bg-white border-gray-400 hover:bg-blue-200"
-                  }
-                `}
+                className={`w-4 h-4 rounded-full border-2 shadow transition-all duration-200 
+            ${
+              current === idx
+                ? "bg-blue-500 border-blue-700 scale-125"
+                : "bg-white border-gray-400 hover:bg-blue-200"
+            }
+          `}
                 style={{
                   marginLeft: idx === 0 ? "-8px" : 0,
                   marginRight: idx === slides.length - 1 ? "-8px" : 0,
                   pointerEvents: "auto",
+                  zIndex: 10, // optional, makes sure it's above the bar
                 }}
                 aria-label={`Go to slide ${idx + 1}`}
               />

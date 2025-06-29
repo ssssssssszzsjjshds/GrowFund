@@ -1,16 +1,25 @@
 import { useParams } from "react-router";
-import CampaignList from "../../components/CampaignList";
+
+import { categoryLabels } from "../../../../../shared/categories.js"; // should be an object: { "Art": "Artistic Inspirations", ... }
+import CategoryCampaignsList from "../../components/CategoryCampaignsList.jsx";
 
 const CategoryPage = () => {
   const { category } = useParams();
+  const decodedCategory = category ? decodeURIComponent(category) : "";
 
-  // You can pass the category as a prop to CampaignList
+  // Use label if available, otherwise fall back to raw category
+  const displayLabel =
+    (decodedCategory && categoryLabels[decodedCategory]) ||
+    decodedCategory ||
+    "Unknown";
+
   return (
-    <div className="category-page">
-      <h1 className="text-3xl font-bold mb-6">
-        Category: <span className="text-yellow-500">{category}</span>
-      </h1>
-      <CampaignList category={category} />
+    <div className="category-page w-full min-h-screen bg-gray-50   flex flex-col items-center">
+      {/* Centered header, nice spacing */}
+
+      <div className="w-full  ">
+        <CategoryCampaignsList category={decodedCategory} />
+      </div>
     </div>
   );
 };
